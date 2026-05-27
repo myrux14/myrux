@@ -410,6 +410,7 @@ def get_companies_grouped():
                 c.id as company_id,
                 c.name as company_name,
 
+                s.id as system_id,
                 s.name as place_name,
                 s.chemistry_model,
 
@@ -453,6 +454,8 @@ def get_companies_grouped():
             if r["place_name"]:
 
                 companies[cid]["systems"].append({
+
+                    "id": r["system_id"],
 
                     "place_name": r["place_name"],
 

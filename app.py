@@ -98,6 +98,7 @@ params = st.query_params
 if (
 
     "token" in params
+    and "username" in params
     and "role" in params
     and "company_id" in params
     and "logged_in"
@@ -122,6 +123,25 @@ if (
     ] = int(
         params.get("company_id")
     )
+
+    # =====================================
+    # RESTORE USER
+    # =====================================
+    st.session_state["user"] = {
+
+        "username":
+            params.get("username"),
+
+        "role":
+            params.get("role"),
+
+        "company_id":
+            int(
+                params.get(
+                    "company_id"
+                )
+            )
+    }
 
 # =========================================
 # LOGIN
@@ -249,23 +269,4 @@ else:
 
     st.stop()
 
-from core.database import get_connection
-import bcrypt
 
-conn = get_connection()
-cursor = conn.cursor()
-
-new_password = bcrypt.hashpw(
-    "admin123".encode(),
-    bcrypt.gensalt()
-).decode()
-
-cursor.execute("""
-    UPDATE users
-    SET password = ?
-    WHERE username = %s
-""", (new_password,))
-
-conn.commit()
-
-print("PASSWORD UPDATED")

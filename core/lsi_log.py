@@ -68,17 +68,54 @@ def calcular_lsi_log(ph, tds, temp_c, calcium, alkalinity):
         print("Error LSI log:", e)
         return None
 
-def componentes_log(tds, temp, calcium, alkalinity):
+def componentes_log(
+
+    ph,
+    tds,
+    temp,
+    calcium,
+    alkalinity
+
+):
+
     try:
+
         A = factor_A(tds)
         B = factor_B(temp)
         C = factor_C(calcium)
         D = factor_D(alkalinity)
-
         if None in [A, B, C, D]:
-            return None, None, None, None, None
 
-        pHs = (9.3 + A + B) - (C + D)
-        return A, B, C, D, pHs
-    except:
-        return None, None, None, None, None
+            return None
+
+        # ======================
+        # pHs
+        # ======================
+        pHs = (
+            9.3 + A + B
+        ) - (C + D)
+
+        # ======================
+        # LSI
+        # ======================
+        lsi = ph - pHs
+
+        return {
+
+            "factor_A": round(A, 2),
+            "factor_B": round(B, 2),
+            "factor_C": round(C, 2),
+            "factor_D": round(D, 2),
+            "ph_saturacion": round(pHs, 2),
+            "lsi": round(lsi, 2)
+
+        }
+
+    except Exception as e:
+
+        print(
+            "Error componentes_log:",
+            e
+        )
+
+        return None

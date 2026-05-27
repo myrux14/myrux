@@ -24,6 +24,9 @@ from modules.admin.repository import (
     update_company_status
 )
 
+from modules.systems.repository import (
+    delete_system
+)
 # -----------------------------
 # PANEL ADMIN
 # -----------------------------
@@ -149,6 +152,8 @@ def admin_panel():
             errors="ignore"
         )
 
+
+        
         # ==================================================
         # RENOMBRAR COLUMNAS
         # ==================================================
@@ -329,44 +334,177 @@ def admin_panel():
             # ==================================================
             # EMPRESAS REGISTRADAS
             # ==================================================
+
+            # Título sección empresas
             st.subheader("📋 Empresas registradas")
 
+            # ==============================================
+            # OBTENER EMPRESAS DESDE DB
+            # ==============================================
+            # La función regresa una lista de empresas
+            # junto con sus sistemas relacionados
             companies = get_companies_grouped()
 
+            # ==============================================
+            # RECORRER EMPRESAS
+            # ==============================================
             for company in companies:
 
+                # ==========================================
+                # EXPANDER EMPRESA
+                # ==========================================
+                # Cada empresa se muestra en un panel
+                # desplegable independiente
                 with st.expander(
                     f"🏭 {company['name']}"
                 ):
 
-                    # ==================================================
-                    # SISTEMAS
-                    # ==================================================
+                    # ======================================
+                    # SISTEMAS DE LA EMPRESA
+                    # ======================================
                     st.subheader("📍 Sistemas")
 
+                    # ======================================
+                    # LISTA SISTEMAS
+                    # ======================================
+                    # Obtiene todos los sistemas
+                    # asociados a la empresa
                     systems = company["systems"]
 
+                    # ======================================
+                    # VALIDAR SI EXISTEN SISTEMAS
+                    # ======================================
                     if systems:
 
+                        # ==================================
+                        # RECORRER SISTEMAS
+                        # ==================================
                         for system in systems:
 
-                            st.markdown(
-                                f"""
-                                📍 **{system['place_name']}**  📍
-                                --- ⚙️ Tipo:
-                                {system['asset_type']} 
-                                --- 🧪 Método:
-                                {system['chemistry_model']} 
-                                """
+                            # ==============================
+                            # COLUMNAS
+                            # ==============================
+                            # Columna izquierda:
+                            # información sistema
+                            #
+                            # Columna derecha:
+                            # botón eliminar
+                            col_info, col_delete = st.columns(
+                                [5, 1]
                             )
 
+                            # ==============================
+                            # INFO SISTEMA
+                            # ==============================
+                            with col_info:
+
+                                # ==========================
+                                # MOSTRAR DATOS SISTEMA
+                                # ==========================
+                                st.markdown(
+                                    f"""
+                                    📍 **{system['place_name']}** 📍
+                                    
+                                    ⚙️ Tipo: {system['asset_type']}
+                                    
+                                    🧪 Método: {system['chemistry_model']}
+                                    """
+                                )
+
+                            # ==============================
+                            # ELIMINAR SISTEMA
+                            # ==============================
+                            with col_delete:
+
+                                # ==========================
+                                # BOTÓN ELIMINAR
+                                # ==========================
+                                if st.button(
+                                    "🗑️ Eliminar",
+                                    key=f"delete_system_{system['id']}"
+                                ):
+
+                                    st.session_state[
+                                        "confirm_delete_system"
+                                    ] = system["id"]
+
+                            # ======================================
+                            # CONFIRMACIÓN ELIMINAR
+                            # ======================================
+                            if (
+                                st.session_state.get(
+                                    "confirm_delete_system"
+                                )
+                                == system["id"]
+                            ):
+
+                                st.warning(
+                                    f"""
+                            ¿Seguro que deseas eliminar
+                            el sistema:
+
+                            {system['place_name']}?
+                                    """
+                                )
+
+                                col_yes, col_no = st.columns(2)
+
+                                # ==================================
+                                # CONFIRMAR
+                                # ==================================
+                                with col_yes:
+
+                                    if st.button(
+                                        "✅ Sí eliminar",
+                                        key=f"confirm_yes_{system['id']}"
+                                    ):
+
+                                        delete_system(
+                                            system["id"]
+                                        )
+
+                                        st.session_state[
+                                            "confirm_delete_system"
+                                        ] = None
+
+                                        st.success(
+                                            "Sistema eliminado"
+                                        )
+
+                                        st.rerun()
+
+                                # ==================================
+                                # CANCELAR
+                                # ==================================
+                                with col_no:
+
+                                    if st.button(
+                                        "❌ Cancelar",
+                                        key=f"cancel_delete_{system['id']}"
+                                    ):
+
+                                        st.session_state[
+                                            "confirm_delete_system"
+                                        ] = None
+
+                                        st.rerun()
+
+                            # ==============================
+                            # SEPARADOR SISTEMAS
+                            # ==============================
+                            st.divider()
+
+                    # ======================================
+                    # SIN SISTEMAS
+                    # ======================================
                     else:
 
+                        # Mensaje si empresa no tiene sistemas
                         st.info(
                             "Sin sistemas"
                         )
 
-                    st.divider()
+
 
                     # ==================================================
                     # AGREGAR SISTEMA

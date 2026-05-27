@@ -79,11 +79,15 @@ def login():
         )
 
         # =========================================
-        # DEBUG LOGIN
+        # DEBUG LOGIN PERSISTENTE
         # =========================================
-        st.sidebar.write("DEBUG LOGIN:")
-        st.sidebar.write(user)
-        st.sidebar.write(type(user))
+        st.session_state[
+            "debug_login"
+        ] = user
+
+        st.session_state[
+            "debug_login_type"
+        ] = str(type(user))
 
         # =================================
         # USER INACTIVE
@@ -124,7 +128,9 @@ def login():
                 "token"
             ] = token
 
-            # persistencia URL
+            # =================================
+            # PERSISTENCIA URL
+            # =================================
             st.query_params.update({
 
                 "token": token,
@@ -152,4 +158,3 @@ def login():
                 "Credenciales incorrectas"
             )
 
-    return False
