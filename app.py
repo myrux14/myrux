@@ -1,6 +1,10 @@
 import pandas as pd
 import streamlit as st
 
+from modules.public.lsi_simulator import (
+    render_public_lsi
+)
+
 from modules.analytics.service import (
     calcular_lsi,
     clasificar_lsi
@@ -22,7 +26,8 @@ from core.optimizer import (
 # CONFIG STREAMLIT
 # =========================================
 st.set_page_config(
-    page_title="Water Analytics",
+    page_title="Myrux",
+    page_icon="📈",
     layout="wide"
 )
 
@@ -72,6 +77,11 @@ from modules.auth.ui import (
 from core.env_check import (
     check_environment
 )
+
+from modules.analytics.tracking import (
+    register_visit
+)
+
 
 # =========================================
 # INIT DB SOLO LOCAL
@@ -152,13 +162,24 @@ logged = login()
 
 if not logged:
 
-    st.title(APP_NAME)
+    if (
+        "visit_registered"
+        not in st.session_state
+    ):
 
-    st.caption(
-        "Inicia sesión para continuar"
-    )
+        register_visit(
+            "public_lsi"
+        )
+
+        st.session_state[
+            "visit_registered"
+        ] = True
+
+    render_public_lsi()
 
     st.stop()
+
+    
 
 # =========================================
 # VALIDACIÓN SESIÓN

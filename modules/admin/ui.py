@@ -38,10 +38,12 @@ def admin_panel():
 
     st.title("⚙️ Panel de Administración")
 
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "Usuarios",
         "Empresas",
-        "Base de datos"
+        "Base de datos",
+        "Visitas",
+        "Contactos"
     ])
 
     # ==================================================
@@ -741,6 +743,149 @@ def admin_panel():
             except Exception as e:
 
                 st.error(f"Error DB: {e}")
+
+            finally:
+
+                cursor.close()
+                conn.close()
+
+        # ==================================================
+        # TAB VISITAS
+        # ==================================================
+        with tab4:
+
+            st.subheader("📈 Analítica pública")
+
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            try:
+
+                # =====================================
+                # TOTAL VISITAS
+                # =====================================
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM analytics_visits
+                """)
+
+                total_visitas = cursor.fetchone()[0]
+
+                # =====================================
+                # VISITAS HOY
+                # =====================================
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM analytics_visits
+                    WHERE DATE(visit_date) = CURRENT_DATE
+                """)
+
+                visitas_hoy = cursor.fetchone()[0]
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.metric(
+                        "Visitas totales",
+                        total_visitas
+                    )
+
+                with col2:
+                    st.metric(
+                        "Visitas hoy",
+                        visitas_hoy
+                    )
+
+                # =====================================
+                # ÚLTIMAS VISITAS
+                # =====================================
+                cursor.execute("""
+                    SELECT *
+                    FROM analytics_visits
+                    ORDER BY id DESC
+                    LIMIT 100
+                """)
+
+                data = cursor.fetchall()
+
+                st.subheader(
+                    "Últimas visitas"
+                )
+
+                st.dataframe(
+                    data,
+                    use_container_width=True
+                )
+
+            except Exception as e:
+
+                st.error(
+                    f"Error: {e}"
+                )
+
+            finally:
+
+                cursor.close()
+                conn.close()
+
+        # ==================================================
+        # TAB CONTACTOS
+        # ==================================================
+        with tab5:
+
+            st.subheader(
+                "📧 Solicitudes de contacto"
+            )
+
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            try:
+
+                cursor.execute("""
+                    SELECT
+                        id,
+                        created_at,
+                        name,
+                        email,
+                        message,
+                        status
+                    FROM contact_requests
+                    ORDER BY created_at DESC
+                """)
+
+                data = cursor.fetchall()
+
+                if data:
+
+                    df = pd.DataFrame(
+                        data,
+                        columns=[
+                            "ID",
+                            "Fecha",
+                            "Nombre",
+                            "Correo",
+                            "Mensaje",
+                            "Estado"
+                        ]
+                    )
+
+                    st.dataframe(
+                        df,
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info(
+                        "No hay solicitudes de contacto."
+                    )
+
+            except Exception as e:
+
+                st.error(
+                    f"Error: {e}"
+                )
 
             finally:
 

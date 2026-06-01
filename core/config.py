@@ -77,7 +77,7 @@ def get_db_info():
 # -----------------------------
 # APP
 # -----------------------------
-APP_NAME = "Water Analytics"
+APP_NAME = "Calculadora Índice de Saturación Langelier (LSI)"
 APP_VERSION = "1.0.0"
 
 # -----------------------------

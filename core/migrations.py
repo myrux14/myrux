@@ -228,6 +228,64 @@ def run_migrations():
                 "007_system_chemistry_model"
             )
 
+        # =====================================================
+        # 008 - ANALYTICS VISITS
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "008_analytics_visits"
+        ):
+
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS analytics_visits (
+
+                id {id_type},
+
+                visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                page TEXT
+
+            )
+            """)
+
+            mark_migration(
+                cursor,
+                "008_analytics_visits"
+            )
+
+        # =====================================================
+        # 009 - CONTACT REQUESTS
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "009_contact_requests"
+        ):
+
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS contact_requests (
+
+                id {id_type},
+
+                created_at TIMESTAMP
+                DEFAULT CURRENT_TIMESTAMP,
+
+                name TEXT,
+
+                email TEXT,
+
+                message TEXT,
+
+                status TEXT
+                DEFAULT 'new'
+
+            )
+            """)
+
+            mark_migration(
+                cursor,
+                "009_contact_requests"
+            )
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------

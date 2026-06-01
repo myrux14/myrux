@@ -4,6 +4,10 @@ import streamlit as st
 from modules.auth.service import login_user
 import uuid
 
+from modules.contact.repository import (
+    create_contact_request
+)
+
 
 # =========================================
 # LOGOUT
@@ -26,7 +30,7 @@ def logout():
 def login():
 
     st.sidebar.markdown(
-        "### 🔐 Cuenta"
+        "## 🔐 Cuenta Myrux"
     )
 
     # =====================================
@@ -157,4 +161,67 @@ def login():
             st.sidebar.error(
                 "Credenciales incorrectas"
             )
+
+    # =====================================
+    # CONTACTO
+    # =====================================
+    st.sidebar.divider()
+
+    st.sidebar.markdown(
+        "## 📧 Contacto"
+    )
+
+    with st.sidebar.form(
+        "contact_form",
+        clear_on_submit=True
+    ):
+
+        nombre = st.text_input(
+            "Nombre"
+        )
+
+        correo = st.text_input(
+            "Correo electrónico"
+        )
+
+        mensaje = st.text_area(
+            "Mensaje",
+            height=100
+        )
+
+        enviar = st.form_submit_button(
+            "Enviar consulta"
+        )
+
+    if enviar:
+
+        if not nombre or not correo:
+
+            st.sidebar.warning(
+                "Completa nombre y correo."
+            )
+
+        else:
+
+            ok = create_contact_request(
+                nombre,
+                correo,
+                mensaje
+            )
+
+            if ok:
+
+                st.sidebar.success(
+                    "Consulta enviada."
+                )
+
+                st.rerun()
+
+            else:
+
+                st.sidebar.error(
+                    "Error enviando consulta."
+                )
+
+    return False
 

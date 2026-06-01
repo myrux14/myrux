@@ -1,5 +1,5 @@
 # core/database.py
-# core/database.py
+
 import psycopg2
 import sqlite3
 from core.config import DATABASE_URL, DB_TYPE, DB_PATH
