@@ -21,6 +21,44 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# -----------------------------
+# DATABASE CONFIG
+# -----------------------------
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+
+    user = os.getenv("NEON_USER")
+    password = os.getenv("NEON_PASSWORD")
+    host = os.getenv("NEON_HOST")
+    port = os.getenv("NEON_PORT")
+    db = os.getenv("NEON_DB")
+
+    DATABASE_URL = (
+        f"postgresql://{user}:{password}"
+        f"@{host}:{port}/{db}"
+        "?sslmode=require"
+    )
+
+# =====================================
+# DEBUG TEMPORAL
+# =====================================
+print("NEON_USER =", os.getenv("NEON_USER"))
+print("NEON_PASSWORD =", os.getenv("NEON_PASSWORD"))
+print("NEON_HOST =", os.getenv("NEON_HOST"))
+print("NEON_PORT =", os.getenv("NEON_PORT"))
+print("NEON_DB =", os.getenv("NEON_DB"))
+
+# Ocultar contraseña al imprimir URL
+if DATABASE_URL:
+    print(
+        "DATABASE_URL =",
+        DATABASE_URL.replace(
+            str(os.getenv("NEON_PASSWORD")),
+            "***"
+        )
+    )
+
 # 🔥 DETECCIÓN ROBUSTA
 def detect_db_type(url):
     if not url:
