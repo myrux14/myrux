@@ -29,6 +29,19 @@ def logout():
 # =========================================
 def login():
 
+    from core.database import get_connection
+    import pandas as pd
+    import streamlit as st
+
+    conn = get_connection()
+
+    df = pd.read_sql(
+        "SELECT id, username, role, active FROM users",
+        conn
+    )
+
+    st.dataframe(df)
+
     st.sidebar.markdown(
         "## 🔐 Cuenta Myrux"
     )
