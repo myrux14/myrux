@@ -3,6 +3,7 @@
 from core.database import get_connection
 from core.db_utils import p
 from core.security import hash_password, verify_password
+from core.config import DB_TYPE
 
 
 # -----------------------------
@@ -578,7 +579,8 @@ def insert_user(
             bcrypt.gensalt()
         ).decode()
 
-        cursor.execute("""
+        cursor.execute(
+            f"""
             INSERT INTO users (
                 username,
                 password,
@@ -586,14 +588,22 @@ def insert_user(
                 active,
                 company_id
             )
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            username,
-            hashed,
-            role,
-            1,
-            company_id
-        ))
+            VALUES (
+                {p()},
+                {p()},
+                {p()},
+                {p()},
+                {p()}
+            )
+            """,
+            (
+                username,
+                hashed,
+                role,
+                1,
+                company_id
+            )
+        )
 
         conn.commit()
 
@@ -605,6 +615,9 @@ def insert_user(
             "Error insert_user:",
             e
         )
+
+        if conn:
+            conn.rollback()
 
         return False
 

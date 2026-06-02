@@ -23,8 +23,8 @@ def render_public_lsi():
         .stSlider {
             padding-top: 0rem !important;
             padding-bottom: 0rem !important;
-            margin-top: -16px !important;
-            margin-bottom: -16px !important;
+            margin-top: -18px !important;
+            margin-bottom: -18px !important;
         }
 
         /* Etiquetas sliders */

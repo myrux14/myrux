@@ -336,7 +336,7 @@ def render_field_data_table(df):
 
             df_view,
 
-            use_container_width=True,
+            width="stretch",
 
             height=250
         )

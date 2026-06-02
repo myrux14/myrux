@@ -356,7 +356,7 @@ def render_optimization():
 
         st.dataframe(
             df_opt,
-            use_container_width=True
+            width="stretch"
         )
 
         # ==============================
@@ -470,7 +470,7 @@ def render_optimization():
 
             fig,
 
-            use_container_width=True
+            width="stretch"
 
         )
 

@@ -104,7 +104,7 @@ def render_graphs(df):
     # ==============================
     st.plotly_chart(
         fig,
-        use_container_width=True
+        width="stretch"
     )
 
     # ==================================
@@ -171,7 +171,7 @@ def render_graphs(df):
 
         fig_tab,
 
-        use_container_width=True
+        width="stretch"
 
     )
 
@@ -258,6 +258,6 @@ def render_graphs(df):
 
         fig_compare,
 
-        use_container_width=True
+        width="stretch"
 
     )

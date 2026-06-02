@@ -67,7 +67,7 @@ def render_lsi_charts(df):
     ))
 
     fig_tabla = estilo_base(fig_tabla, "LSI - Método Tablas")
-    st.plotly_chart(fig_tabla, use_container_width=True)
+    st.plotly_chart(fig_tabla, width="stretch")
 
     # -----------------------------
     # 2. LSI LOG
@@ -88,7 +88,7 @@ def render_lsi_charts(df):
     ))
 
     fig_log = estilo_base(fig_log, "LSI - Método Logarítmico")
-    st.plotly_chart(fig_log, use_container_width=True)
+    st.plotly_chart(fig_log, width="stretch")
 
     # -----------------------------
     # 3. COMPARACIÓN PRO
@@ -138,7 +138,7 @@ def render_lsi_charts(df):
         ))
 
     fig = estilo_base(fig, "Comparación LSI (Tabla vs Log)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 def render_optimizacion_chart(df):
 
@@ -211,4 +211,4 @@ def render_optimizacion_chart(df):
         hovermode="x unified"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")

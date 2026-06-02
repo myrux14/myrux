@@ -170,7 +170,7 @@ def admin_panel():
 
         st.dataframe(
             df_users,
-            use_container_width=True
+            width="stretch"
         )
 
         st.divider()
@@ -814,7 +814,7 @@ def admin_panel():
 
                 st.dataframe(
                     data,
-                    use_container_width=True
+                    width="stretch"
                 )
 
             except Exception as e:
@@ -872,7 +872,7 @@ def admin_panel():
 
                     st.dataframe(
                         df,
-                        use_container_width=True
+                        width="stretch"
                     )
 
                 else:
