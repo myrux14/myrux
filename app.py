@@ -31,14 +31,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# =========================================
-# MIGRATIONS
-# =========================================
+
+from core.database import (
+    init_db
+)
+
 from core.migrations import (
     run_migrations
 )
 
-run_migrations()
 
 from modules.auth.service import (
     create_user
@@ -50,10 +51,6 @@ from modules.auth.service import (
 from core.config import (
     APP_NAME,
     ENV
-)
-
-from core.database import (
-    init_db
 )
 
 from modules.auth.ui import (
@@ -72,15 +69,18 @@ from modules.analytics.tracking import (
 # =========================================
 # INIT DB SOLO LOCAL
 # =========================================
-if (
+# =========================================
+# INIT DB + MIGRATIONS
+# =========================================
+if "db_initialized" not in st.session_state:
 
-    ENV == "local"
-    and "db_initialized"
-    not in st.session_state
-
-):
+    print("🔥 LLAMANDO INIT_DB")
 
     init_db()
+
+    print("🔥 LLAMANDO MIGRATIONS")
+
+    run_migrations()
 
     st.session_state[
         "db_initialized"

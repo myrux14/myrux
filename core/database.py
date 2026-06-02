@@ -31,6 +31,9 @@ def get_connection():
 # INIT DB (BASE + SEED)
 # -----------------------------
 def init_db():
+
+    print("🚀 INIT_DB EJECUTÁNDOSE")
+
     conn = None
     cursor = None
 
@@ -142,6 +145,8 @@ def init_db():
             cursor.close()
         if conn:
             conn.close()
+
+    print("✅ INIT_DB TERMINADO")
 
 # =========================================
 # DB INFO
