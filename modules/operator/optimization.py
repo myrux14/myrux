@@ -355,8 +355,7 @@ def render_optimization():
         )
 
         st.dataframe(
-            df_opt,
-            width="stretch"
+            df_opt
         )
 
         # ==============================
@@ -468,10 +467,7 @@ def render_optimization():
         # ==================================
         st.plotly_chart(
 
-            fig,
-
-            width="stretch"
-
+            fig
         )
 
 

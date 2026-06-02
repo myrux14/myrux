@@ -103,8 +103,7 @@ def render_graphs(df):
     # MOSTRAR
     # ==============================
     st.plotly_chart(
-        fig,
-        width="stretch"
+        fig
     )
 
     # ==================================
@@ -169,9 +168,7 @@ def render_graphs(df):
     # ==============================
     st.plotly_chart(
 
-        fig_tab,
-
-        width="stretch"
+        fig_tab
 
     )
 
@@ -256,8 +253,6 @@ def render_graphs(df):
     # ==============================
     st.plotly_chart(
 
-        fig_compare,
-
-        width="stretch"
+        fig_compare
 
     )
