@@ -51,10 +51,8 @@ def render_public_lsi():
         "💧 Calculadora Índice de Saturación Langelier (LSI)"
     )
 
-    st.divider()
-
-    col_sim, col_log, col_tab = st.columns(
-        [3, 1, 1]
+    col_sim, = st.columns(
+        [4]
     )
 
     # =========================
@@ -66,43 +64,51 @@ def render_public_lsi():
             "Simulador en tiempo real"
         )
 
-        
-        tds = st.slider(
-            "TDS (ppm)",
-            50,
-            5000,
-            500
-        )
+        st.divider()
 
-        temp = st.slider(
-            "Temperatura °C",
-            0.0,
-            50.0,
-            25.0,
-            0.1
-        )
+        sim_col1, sim_col2 = st.columns(2)
 
-        calcio = st.slider(
-            "Calcio (ppm)",
-            5,
-            500,
-            100
-        )
+        with sim_col1:
 
-        alcalinidad = st.slider(
-            "Alcalinidad (ppm)",
-            5,
-            500,
-            150
-        )
+            tds = st.slider(
+                "TDS (ppm)",
+                50,
+                5000,
+                500
+            )
 
-        ph = st.slider(
-            "pH",
-            5.0,
-            10.0,
-            7.5,
-            0.01
-        )
+            temp = st.slider(
+                "Temperatura °C",
+                0.0,
+                50.0,
+                25.0,
+                0.1
+            )
+
+            ph = st.slider(
+                "pH",
+                5.0,
+                10.0,
+                7.5,
+                0.01
+            )
+
+        with sim_col2:
+
+            calcio = st.slider(
+                "Calcio (ppm)",
+                5,
+                500,
+                100
+            )
+
+            alcalinidad = st.slider(
+                "Alcalinidad (ppm)",
+                5,
+                500,
+                150
+            )
+
 
     # =========================
     # CÁLCULO
@@ -126,6 +132,7 @@ def render_public_lsi():
     comp_log = result.get("log")
     comp_tab = result.get("tablas")
 
+    
     if not comp_log or not comp_tab:
 
         st.error(
@@ -133,6 +140,8 @@ def render_public_lsi():
         )
 
         return
+    
+      
 
     # =========================
     # ETIQUETAS
@@ -159,16 +168,36 @@ def render_public_lsi():
 
     }
 
+    st.divider()
+
+    col_log, col_tab = st.columns(2)
     # =========================
     # MÉTODO LOG
     # =========================
     with col_log:
 
-        st.subheader("Método Log")
+        st.markdown(
+            f"""
+            <h2>
+                Método Log
+                <span style="
+                    color:#22c55e;
+                    font-size:30px;
+                    margin-left:15px;
+                ">
+                    {comp_log['lsi']:.2f}
+                </span>
+            </h2>
+            """,
+            unsafe_allow_html=True
+        )
 
         for k, v in comp_log.items():
 
-            c1, c2 = st.columns([1.5, 0.8])
+            if k == "lsi":
+                continue
+
+            c1, c2 = st.columns([0.3, 0.3])
 
             c1.write(labels_log.get(k, k))
             c2.write(f"**{v:.2f}**")
@@ -178,11 +207,28 @@ def render_public_lsi():
     # =========================
     with col_tab:
 
-        st.subheader("Método Tablas")
+        st.markdown(
+            f"""
+            <h2>
+                Método Tablas
+                <span style="
+                    color:#22c55e;
+                    font-size:30px;
+                    margin-left:15px;
+                ">
+                    {comp_tab['lsi']:.2f}
+                </span>
+            </h2>
+            """,
+            unsafe_allow_html=True
+        )
 
         for k, v in comp_tab.items():
 
-            c1, c2 = st.columns([1.5, 0.8])
+            if k == "lsi":
+                continue
+
+            c1, c2 = st.columns([0.3, 0.3])
 
             c1.write(labels_tab.get(k, k))
             c2.write(f"**{v:.2f}**")
