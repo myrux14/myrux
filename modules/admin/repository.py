@@ -196,9 +196,11 @@ def create_company(
             INSERT INTO systems (
                 company_id,
                 name,
-                asset_type_id
+                asset_type_id,
+                chemistry_model
             )
             VALUES (
+                {p()},
                 {p()},
                 {p()},
                 {p()}
@@ -207,7 +209,8 @@ def create_company(
             (
                 company_id,
                 place_name,
-                asset_type_id
+                asset_type_id,
+                chemistry_model
             )
         )
 
