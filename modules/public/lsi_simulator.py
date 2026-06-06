@@ -16,15 +16,15 @@ def render_public_lsi():
 
         /* Menos espacio entre widgets */
         div[data-testid="stVerticalBlock"] > div {
-            gap: 0.25rem !important;
+            gap: 0.30rem !important;
         }
 
         /* Sliders compactos */
         .stSlider {
             padding-top: 0rem !important;
             padding-bottom: 0rem !important;
-            margin-top: -18px !important;
-            margin-bottom: -18px !important;
+            margin-top: -16px !important;
+            margin-bottom: -16px !important;
         }
 
         /* Etiquetas sliders */
@@ -170,66 +170,253 @@ def render_public_lsi():
 
     st.divider()
 
-    col_log, col_tab = st.columns(2)
+
+
+    col_log, col_tab, col_info = st.columns(
+        [0.8, 0.9, 1.3]
+    )
+
+    
     # =========================
     # MÉTODO LOG
     # =========================
     with col_log:
 
-        st.markdown(
-            f"""
-            <h2>
-                Método Log
-                <span style="
-                    color:#22c55e;
-                    font-size:30px;
-                    margin-left:15px;
-                ">
-                    {comp_log['lsi']:.2f}
-                </span>
-            </h2>
-            """,
-            unsafe_allow_html=True
-        )
+        with st.container(border=True):
 
-        for k, v in comp_log.items():
+            st.markdown(
+                f"""
+                <h2>
+                    Método Log
+                    <span style="
+                        color:#22c55e;
+                        font-size:30px;
+                        margin-left:15px;
+                    ">
+                        {comp_log['lsi']:.2f}
+                    </span>
+                </h2>
+                """,
+                unsafe_allow_html=True
+            )
 
-            if k == "lsi":
-                continue
+            for k, v in comp_log.items():
 
-            c1, c2 = st.columns([0.3, 0.3])
+                if k == "lsi":
+                    continue
 
-            c1.write(labels_log.get(k, k))
-            c2.write(f"**{v:.2f}**")
+                c1, c2 = st.columns([2, 1])
+
+                c1.write(labels_log.get(k, k))
+                c2.write(f"**{v:.2f}**")
 
     # =========================
     # MÉTODO TABLAS
     # =========================
     with col_tab:
 
-        st.markdown(
-            f"""
-            <h2>
-                Método Tablas
-                <span style="
-                    color:#22c55e;
-                    font-size:30px;
-                    margin-left:15px;
+        with st.container(border=True):
+
+            st.markdown(
+                f"""
+                <h2>
+                    Método Tablas
+                    <span style="
+                        color:#22c55e;
+                        font-size:30px;
+                        margin-left:15px;
+                    ">
+                        {comp_tab['lsi']:.2f}
+                    </span>
+                </h2>
+                """,
+                unsafe_allow_html=True
+            )
+
+            for k, v in comp_tab.items():
+
+                if k == "lsi":
+                    continue
+
+                c1, c2 = st.columns([2, 1])
+
+                c1.write(labels_tab.get(k, k))
+                c2.write(f"**{v:.2f}**")
+
+    # =========================
+    # INFORMACIÓN TEÓRICA
+    # =========================
+    with col_info:
+
+        with st.container(border=True):
+
+            st.markdown(
+                "#### 📚 Interpretación"
+            )
+
+            lsi = comp_tab["lsi"]
+
+            if lsi < -0.5:
+
+                st.error(
+                    "Agua corrosiva"
+                )
+
+                st.markdown(
+                    """
+                    - Alta tendencia a corrosión.
+                    - Posible ataque a tuberías.
+                    """
+                )
+
+            elif lsi > 0.5:
+
+                st.warning(
+                    "Agua incrustante"
+                )
+
+                st.markdown(
+                    """
+                    - Tendencia a precipitar CaCO₃.
+                    - Posibles incrustaciones.
+                    """
+                )
+
+            else:
+
+                st.success(
+                    "Agua estable"
+                )
+
+                st.markdown(
+                    """
+                    - Condición cercana al equilibrio.
+                    - Bajo riesgo de corrosión.
+                    - Bajo riesgo de incrustación.
+                    """
+                )
+
+            st.markdown(
+                """
+                <h4>Rangos típicos</h4>
+
+                <table style="
+                    font-size:14px;
+                    width:100%;
+                    border-collapse:collapse;
                 ">
-                    {comp_tab['lsi']:.2f}
-                </span>
-            </h2>
-            """,
-            unsafe_allow_html=True
-        )
+                    <tr>
+                        <th style="text-align:left;">LSI</th>
+                        <th style="text-align:left;">Estado</th>
+                    </tr>
+                    <tr>
+                        <td>&lt; -0.5</td>
+                        <td>Corrosivo</td>
+                    </tr>
+                    <tr>
+                        <td>-0.5 a 0.5</td>
+                        <td>Estable</td>
+                    </tr>
+                    <tr>
+                        <td>&gt; 0.5</td>
+                        <td>Incrustante</td>
+                    </tr>
+                </table>
+                """,
+                unsafe_allow_html=True
+            )
 
-        for k, v in comp_tab.items():
+    st.divider()
 
-            if k == "lsi":
-                continue
+    st.markdown("""
+    <style>
 
-            c1, c2 = st.columns([0.3, 0.3])
+    p, li {
+        font-size: 18px !important;
+        line-height: 1.8 !important;
+    }
 
-            c1.write(labels_tab.get(k, k))
-            c2.write(f"**{v:.2f}**")
-    
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        """       
+
+        ## Calculadora del Índice de Saturación de Langelier
+
+        El Índice de Saturación de Langelier, también conocido como LSI por sus siglas en inglés, es una herramienta utilizada para estimar la tendencia del agua a formar incrustaciones de carbonato de calcio o, por el contrario, a presentar un comportamiento corrosivo frente a superficies metálicas, tuberías, equipos hidráulicos, calderas, sistemas de enfriamiento, piscinas, pozos y redes de distribución.
+
+        Nuestra calculadora gratuita permite simular en tiempo real el equilibrio del agua a partir de parámetros fisicoquímicos como pH, temperatura, alcalinidad, dureza cálcica, sólidos disueltos totales y otros factores relacionados. Al ingresar los datos, el sistema estima el LSI y muestra una interpretación práctica del resultado para apoyar la toma de decisiones en operación, tratamiento y control de calidad del agua.
+        
+        ## ¿Para qué sirve esta calculadora?
+
+        Esta herramienta puede ayudarte a:
+
+        - Estimar rápidamente la tendencia incrustante o corrosiva del agua.
+        - Evaluar cambios de pH, temperatura, alcalinidad o dureza.
+        - Simular ajustes químicos antes de aplicarlos en campo.
+        - Apoyar decisiones de tratamiento, dosificación y control operativo.
+        - Comparar diferentes muestras o escenarios de operación.
+        - Facilitar la interpretación técnica de análisis de agua.
+
+        ---
+        
+        ### ¿Qué es el Índice de Saturación de Langelier (LSI)?        
+
+        El Índice de Saturación de Langelier (LSI) es una herramienta utilizada
+        para estimar la tendencia del agua a formar incrustaciones de carbonato
+        de calcio (CaCO₃) o a provocar corrosión en tuberías, intercambiadores,
+        calderas y sistemas de enfriamiento.
+
+        El índice compara el pH real del agua con el pH de saturación (pHs).
+
+        **LSI = pH - pHs**
+
+        Donde:
+
+        - **LSI negativo:** tendencia corrosiva.
+        - **LSI cercano a cero:** agua en equilibrio.
+        - **LSI positivo:** tendencia incrustante.
+
+        
+        #### Variables consideradas
+
+        El cálculo del LSI considera:
+
+        - pH
+        - Temperatura
+        - Sólidos disueltos totales (TDS)
+        - Dureza cálcica
+        - Alcalinidad
+
+        Estas variables determinan la estabilidad química del agua y su
+        capacidad para disolver o precipitar carbonato de calcio.
+
+        
+        #### Aplicaciones
+
+        El LSI se utiliza comúnmente en:
+
+        - Torres de enfriamiento
+        - Calderas
+        - Sistemas de ósmosis inversa
+        - Redes de distribución de agua
+        - Piscinas y spas
+        - Plantas de tratamiento de agua
+
+
+        #### Interpretación general
+
+        | LSI | Condición |
+        |------|------------|
+        | < -0.5 | Corrosiva |
+        | -0.5 a 0.5 | Estable |
+        | > 0.5 | Incrustante |
+
+        El rango operativo más utilizado es:
+
+        **-0.2 ≤ LSI ≤ 0.2**
+
+        aunque puede variar dependiendo del tipo de sistema y los materiales de construcción.
+        """
+    )
