@@ -1,15 +1,6 @@
 import pandas as pd
 import streamlit as st
 
-# =========================================
-# CONFIG STREAMLIT
-# =========================================
-st.set_page_config(
-    page_title="Myrux",
-    page_icon="📈",
-    layout="wide"
-)
-
 from modules.public.lsi_simulator import (
     render_public_lsi
 )
@@ -62,6 +53,15 @@ from core.env_check import (
 
 from modules.analytics.tracking import (
     register_visit
+)
+
+# =========================================
+# CONFIG STREAMLIT
+# =========================================
+st.set_page_config(
+    page_title="Myrux",
+    page_icon="📈",
+    layout="wide"
 )
 
 
