@@ -1,6 +1,10 @@
 import pandas as pd
 import streamlit as st
 
+from streamlit_analytics2 import (
+    streamlit_analytics
+)
+
 from core.google_analytics import (
     inject_google_analytics
 )
@@ -35,7 +39,9 @@ st.set_page_config(
     layout="wide"
 )
 
-inject_google_analytics()
+with streamlit_analytics():
+
+    inject_google_analytics()
 
 
 from core.database import (
