@@ -1,6 +1,10 @@
 import pandas as pd
 import streamlit as st
 
+from core.google_analytics import (
+    inject_google_analytics
+)
+
 from modules.public.lsi_simulator import (
     render_public_lsi
 )
@@ -30,6 +34,8 @@ st.set_page_config(
     page_icon="📈",
     layout="wide"
 )
+
+inject_google_analytics()
 
 
 from core.database import (
