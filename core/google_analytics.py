@@ -6,7 +6,7 @@ def inject_google_analytics():
     components.html(
         """
         <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-D3JGDX7T7K"></script>
 
         <script>
 
