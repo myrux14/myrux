@@ -5,31 +5,6 @@ from streamlit_analytics2 import (
     streamlit_analytics
 )
 
-from core.google_analytics import (
-    inject_google_analytics
-)
-
-from modules.public.lsi_simulator import (
-    render_public_lsi
-)
-
-from modules.analytics.service import (
-    calcular_lsi,
-    clasificar_lsi
-)
-
-from modules.analytics.service import (
-    calcular_lsi_dual
-)
-
-from modules.analytics.ui import (
-    render_lsi_charts
-)
-
-from core.optimizer import (
-    ajustar_parametros
-)
-
 # =========================================
 # CONFIG STREAMLIT
 # =========================================
@@ -41,251 +16,274 @@ st.set_page_config(
 
 with streamlit_analytics():
 
-    inject_google_analytics()
-
-
-from core.database import (
-    init_db
-)
-
-from core.migrations import (
-    run_migrations
-)
-
-
-from modules.auth.service import (
-    create_user
-)
-
-# =========================================
-# IMPORTS
-# =========================================
-from core.config import (
-    APP_NAME,
-    ENV
-)
-
-from modules.auth.ui import (
-    login
-)
-
-from core.env_check import (
-    check_environment
-)
-
-from modules.analytics.tracking import (
-    register_visit
-)
-
-
-# =========================================
-# INIT DB SOLO LOCAL
-# =========================================
-# =========================================
-# INIT DB + MIGRATIONS
-# =========================================
-if "db_initialized" not in st.session_state:
-
-    print("🔥 LLAMANDO INIT_DB")
-
-    init_db()
-
-    print("🔥 LLAMANDO MIGRATIONS")
-
-    run_migrations()
-
-    st.session_state[
-        "db_initialized"
-    ] = True
-
-# =========================================
-# RESTAURAR SESIÓN
-# =========================================
-params = st.query_params
-
-if (
-
-    "token" in params
-    and "username" in params
-    and "role" in params
-    and "company_id" in params
-    and "logged_in"
-    not in st.session_state
-
-):
-
-    st.session_state[
-        "logged_in"
-    ] = True
-
-    st.session_state[
-        "token"
-    ] = params.get("token")
-
-    st.session_state[
-        "role"
-    ] = params.get("role")
-
-    st.session_state[
-        "company_id"
-    ] = int(
-        params.get("company_id")
+    from modules.public.lsi_simulator import (
+        render_public_lsi
     )
 
-    # =====================================
-    # RESTORE USER
-    # =====================================
-    st.session_state["user"] = {
+    from modules.analytics.service import (
+        calcular_lsi,
+        clasificar_lsi
+    )
 
-        "username":
-            params.get("username"),
+    from modules.analytics.service import (
+        calcular_lsi_dual
+    )
 
-        "role":
-            params.get("role"),
+    from modules.analytics.ui import (
+        render_lsi_charts
+    )
 
-        "company_id":
-            int(
-                params.get(
-                    "company_id"
-                )
-            )
-    }
+    from core.optimizer import (
+        ajustar_parametros
+    )
 
-# =========================================
-# LOGIN
-# =========================================
-db_info = check_environment()
 
-logged = login()
 
-if not logged:
 
-    if (
-        "visit_registered"
-        not in st.session_state
-    ):
 
-        register_visit(
-            "public_lsi"
-        )
+
+    from core.database import (
+        init_db
+    )
+
+    from core.migrations import (
+        run_migrations
+    )
+
+
+    from modules.auth.service import (
+        create_user
+    )
+
+    # =========================================
+    # IMPORTS
+    # =========================================
+    from core.config import (
+        APP_NAME,
+        ENV
+    )
+
+    from modules.auth.ui import (
+        login
+    )
+
+    from core.env_check import (
+        check_environment
+    )
+
+    from modules.analytics.tracking import (
+        register_visit
+    )
+
+
+    # =========================================
+    # INIT DB SOLO LOCAL
+    # =========================================
+    # =========================================
+    # INIT DB + MIGRATIONS
+    # =========================================
+    if "db_initialized" not in st.session_state:
+
+        print("🔥 LLAMANDO INIT_DB")
+
+        init_db()
+
+        print("🔥 LLAMANDO MIGRATIONS")
+
+        run_migrations()
 
         st.session_state[
-            "visit_registered"
+            "db_initialized"
         ] = True
 
-    render_public_lsi()
+    # =========================================
+    # RESTAURAR SESIÓN
+    # =========================================
+    params = st.query_params
 
-    st.stop()
+    if (
 
-    
+        "token" in params
+        and "username" in params
+        and "role" in params
+        and "company_id" in params
+        and "logged_in"
+        not in st.session_state
 
-# =========================================
-# VALIDACIÓN SESIÓN
-# =========================================
-if "user" not in st.session_state:
+    ):
 
-    st.error(
-        "Sesión inválida. "
-        "Vuelve a iniciar sesión."
-    )
+        st.session_state[
+            "logged_in"
+        ] = True
 
-    st.stop()
+        st.session_state[
+            "token"
+        ] = params.get("token")
 
-# =========================================
-# ROLE
-# =========================================
-role = st.session_state.get(
-    "role"
-)
+        st.session_state[
+            "role"
+        ] = params.get("role")
 
-# =========================================
-# DEBUG SOLO ADMIN
-# =========================================
-if role == "admin":
+        st.session_state[
+            "company_id"
+        ] = int(
+            params.get("company_id")
+        )
 
-    st.sidebar.divider()
+        # =====================================
+        # RESTORE USER
+        # =====================================
+        st.session_state["user"] = {
 
-    st.sidebar.subheader(
-        "🌍 Entorno"
-    )
+            "username":
+                params.get("username"),
 
-    st.sidebar.info(
-        f"""
-ENV: {db_info.get('env')}
-DB: {db_info.get('db')}
-HOST: {db_info.get('host')}
-USER: {db_info.get('user')}
-"""
-    )
+            "role":
+                params.get("role"),
 
-    # =====================================
-    # ALERTAS
-    # =====================================
-    alerts = db_info.get(
-        "alerts",
-        []
-    )
+            "company_id":
+                int(
+                    params.get(
+                        "company_id"
+                    )
+                )
+        }
 
-    for alert_type, message in alerts:
+    # =========================================
+    # LOGIN
+    # =========================================
+    db_info = check_environment()
 
-        if alert_type == "error":
+    logged = login()
 
-            st.sidebar.error(
-                message
+    if not logged:
+
+        if (
+            "visit_registered"
+            not in st.session_state
+        ):
+
+            register_visit(
+                "public_lsi"
             )
 
-        elif alert_type == "warning":
+            st.session_state[
+                "visit_registered"
+            ] = True
 
-            st.sidebar.warning(
-                message
-            )
+        render_public_lsi()
 
-# =========================================
-# ADMIN
-# =========================================
-if role == "admin":
+        st.stop()
 
-    from modules.admin.ui import (
-        admin_panel
+        
+
+    # =========================================
+    # VALIDACIÓN SESIÓN
+    # =========================================
+    if "user" not in st.session_state:
+
+        st.error(
+            "Sesión inválida. "
+            "Vuelve a iniciar sesión."
+        )
+
+        st.stop()
+
+    # =========================================
+    # ROLE
+    # =========================================
+    role = st.session_state.get(
+        "role"
     )
 
-    admin_panel()
+    # =========================================
+    # DEBUG SOLO ADMIN
+    # =========================================
+    if role == "admin":
 
-    st.stop()
+        st.sidebar.divider()
 
-# =========================================
-# OPERATOR
-# =========================================
-elif role == "operator":
+        st.sidebar.subheader(
+            "🌍 Entorno"
+        )
 
-    from modules.operator.ui import (
-        operator_dashboard
-    )
+        st.sidebar.info(
+            f"""
+    ENV: {db_info.get('env')}
+    DB: {db_info.get('db')}
+    HOST: {db_info.get('host')}
+    USER: {db_info.get('user')}
+    """
+        )
 
-    operator_dashboard()
+        # =====================================
+        # ALERTAS
+        # =====================================
+        alerts = db_info.get(
+            "alerts",
+            []
+        )
 
-    st.stop()
+        for alert_type, message in alerts:
 
-# =========================================
-# VIEWER
-# =========================================
-elif role == "viewer":
+            if alert_type == "error":
 
-    st.warning(
-        "Dashboard viewer pendiente"
-    )
+                st.sidebar.error(
+                    message
+                )
 
-    st.stop()
+            elif alert_type == "warning":
 
-# =========================================
-# INVALID ROLE
-# =========================================
-else:
+                st.sidebar.warning(
+                    message
+                )
 
-    st.error(
-        "Rol inválido"
-    )
+    # =========================================
+    # ADMIN
+    # =========================================
+    if role == "admin":
 
-    st.stop()
+        from modules.admin.ui import (
+            admin_panel
+        )
+
+        admin_panel()
+
+        st.stop()
+
+    # =========================================
+    # OPERATOR
+    # =========================================
+    elif role == "operator":
+
+        from modules.operator.ui import (
+            operator_dashboard
+        )
+
+        operator_dashboard()
+
+        st.stop()
+
+    # =========================================
+    # VIEWER
+    # =========================================
+    elif role == "viewer":
+
+        st.warning(
+            "Dashboard viewer pendiente"
+        )
+
+        st.stop()
+
+    # =========================================
+    # INVALID ROLE
+    # =========================================
+    else:
+
+        st.error(
+            "Rol inválido"
+        )
+
+        st.stop()
 
 
