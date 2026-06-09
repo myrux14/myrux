@@ -46,10 +46,12 @@ def render_public_lsi():
         unsafe_allow_html=True
     )
 
+    st.markdown("""
+    ##  💧 Calculadora gratuita del Índice de Saturación de Langelier (LSI)
 
-    st.title(
-        "💧 Calculadora Índice de Saturación Langelier (LSI)"
-    )
+    Calcule el Índice de Saturación de Langelier (LSI) para evaluar
+    el potencial de corrosión o incrustación del agua. La herramienta utiliza parámetros de: pH, TDS, Temperatura, Calcio, Alcalinidad e incluye cálculo mediante método logarítmico y método por tablas.
+    """)
 
     col_sim, = st.columns(
         [4]
@@ -60,9 +62,9 @@ def render_public_lsi():
     # =========================
     with col_sim:
 
-        st.subheader(
-            "Simulador en tiempo real"
-        )
+        st.markdown("""
+        ##### Simulador en tiempo real
+        """)
 
         st.divider()
 
