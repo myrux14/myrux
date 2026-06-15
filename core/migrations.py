@@ -286,6 +286,73 @@ def run_migrations():
                 "009_contact_requests"
             )
 
+        # =====================================================
+        # 010 - ANALYSIS TABLE
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "010_create_analysis"
+        ):
+
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS analysis (
+                id {id_type},
+                company_id INTEGER,
+                company_name TEXT,
+                system_id INTEGER,
+                system_name TEXT,
+                method TEXT,
+                sample_date TEXT,
+                ph REAL,
+                temperature_c REAL,
+                tds_ppm REAL,
+                calcium_hardness REAL,
+                alkalinity REAL,
+                factor_a REAL,
+                factor_b REAL,
+                factor_c REAL,
+                factor_d REAL,
+                ph_s REAL,
+                lsi REAL,
+                lsi_tablas REAL,
+                created_at TEXT
+            )
+            """)
+
+            mark_migration(
+                cursor,
+                "010_create_analysis"
+            )
+
+        # =====================================================
+        # 011 - ADD ID TO EXISTING ANALYSIS (Neon/Postgres)
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "011_add_id_to_analysis"
+        ):
+
+            if DB_TYPE == "postgres":
+
+                try:
+
+                    cursor.execute("""
+                    ALTER TABLE analysis
+                    ADD COLUMN id SERIAL PRIMARY KEY
+                    """)
+
+                except Exception as e:
+
+                    print(
+                        "id ya existe en analysis:",
+                        e
+                    )
+
+            mark_migration(
+                cursor,
+                "011_add_id_to_analysis"
+            )
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------

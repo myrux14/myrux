@@ -287,38 +287,26 @@ def render_field_data_table(df):
         # ======================================
         # ORDEN COLUMNAS
         # ======================================
-        df_view= df_view[[
-
+        desired_cols = [
             "ID",
-
             "Fecha",
-
             "pH",
-
             "TDS ppm",
-
             "Temperature °C",
-
             "Calcium Hardness",
-
             "Alkalinity",
-
             "A_TDS",
-
             "B_Temp",
-
             "C_Hardness",
-
             "D_Alkalinity",
-
             "pH_s",
-
             "LSI_log",
+            "LSI_tab",
+        ]
 
-            "LSI_tab"
-
-
-        ]]
+        df_view = df_view[
+            [c for c in desired_cols if c in df_view.columns]
+        ]
 
         # ======================================
         # SOLO FECHA SIN HORA
