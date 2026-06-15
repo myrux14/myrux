@@ -1,8 +1,11 @@
 import pandas as pd
 
 from core.database import (
-    get_connection
+    get_connection,
+    get_engine
 )
+
+from core.db_utils import p
 
 
 # =========================================
@@ -10,7 +13,7 @@ from core.database import (
 # =========================================
 def save_analysis(df):
 
-    conn = get_connection()
+    engine = get_engine()
 
     try:
 
@@ -18,14 +21,12 @@ def save_analysis(df):
 
             "analysis",
 
-            conn,
+            engine,
 
             if_exists="append",
 
             index=False
         )
-
-        conn.commit()
 
     except Exception as e:
 
@@ -33,10 +34,6 @@ def save_analysis(df):
             "Error save_analysis:",
             e
         )
-
-    finally:
-
-        conn.close()
 
 
 # =========================================
@@ -53,11 +50,11 @@ def get_analysis_by_system(
 
     try:
 
-        query = """
+        query = f"""
             SELECT *
             FROM analysis
-            WHERE company_id = ?
-            AND system_id = ?
+            WHERE company_id = {p()}
+            AND system_id = {p()}
             ORDER BY sample_date DESC
         """
 
@@ -98,10 +95,7 @@ def delete_analysis(record_id):
     cursor = conn.cursor()
 
     cursor.execute(
-        """
-        DELETE FROM analysis
-        WHERE id = ?
-        """,
+        f"DELETE FROM analysis WHERE id = {p()}",
         (record_id,)
     )
 

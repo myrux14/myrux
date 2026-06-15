@@ -2,6 +2,7 @@
 
 import psycopg2
 import sqlite3
+from sqlalchemy import create_engine
 from core.config import DATABASE_URL, DB_TYPE, DB_PATH
 from core.security import hash_password
 
@@ -11,6 +12,15 @@ from core.config import (
 )
 
 
+
+
+# -----------------------------
+# SQLALCHEMY ENGINE
+# -----------------------------
+def get_engine():
+    if DB_TYPE == "postgres":
+        return create_engine(DATABASE_URL)
+    return create_engine(f"sqlite:///{DB_PATH}")
 
 
 # -----------------------------
