@@ -47,11 +47,11 @@ def clasificar_lsi(lsi):
     
 def color_lsi(clase):
     colores = {
-        "Incrustación alta": "red",
-        "Incrustación ligera con corrosión": "orange",
+        "Incrustante": "red",
+        "Tendencia incrustante": "orange",
         "Equilibrada": "green",
-        "Corrosión ligera": "lightblue",
-        "Corrosión alta": "blue"
+        "Tendencia Corrosiva": "lightblue",
+        "Corrosiva": "blue"
     }
     return colores.get(clase, "gray")
 

@@ -85,6 +85,8 @@ def operator_dashboard():
         "company_id"
     )
 
+    st.session_state["company_id"] = company_id
+
     # ======================================
     # CARGAR DATOS DASHBOARD
     # ======================================
