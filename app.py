@@ -59,7 +59,7 @@ from modules.analytics.tracking import (
 # CONFIG STREAMLIT
 # =========================================
 st.set_page_config(
-    page_title="Myrux",
+    page_title="Myrux|analista digital de calidad de agua",
     page_icon="📈",
     layout="wide"
 )

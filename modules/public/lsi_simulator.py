@@ -8,6 +8,36 @@ from modules.analytics.lsi_engine import (
 def render_public_lsi():
 
     # =========================
+    # SEO META TAGS + NOSCRIPT
+    # =========================
+    st.markdown(
+        """
+        <meta name="description" content="Calculadora gratuita del Índice de Saturación de Langelier (LSI). Evalúa si el agua es corrosiva o incrustante. Ideal para cisternas, torres de enfriamiento, calderas y sistemas de agua potable en hotelería e industria.">
+        <meta name="keywords" content="calculadora LSI, índice de Langelier, Langelier Saturation Index, corrosión agua, incrustación agua, pH agua, tratamiento agua, cisternas hotelería, torres enfriamiento, índice saturación Langelier, calidad agua potable, agua corrosiva, agua incrustante, TDS, alcalinidad, dureza cálcica">
+        <meta name="robots" content="index, follow">
+        <meta property="og:title" content="Calculadora LSI – Índice de Saturación de Langelier | Myrux">
+        <meta property="og:description" content="Calcula el LSI en tiempo real: pH, temperatura, alcalinidad, dureza cálcica y TDS. Herramienta gratuita para operadores de agua potable e industrial.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://myrux.app">
+        <link rel="canonical" href="https://myrux.app">
+        <noscript>
+        <h1>Calculadora del Índice de Saturación de Langelier (LSI) — Gratis</h1>
+        <p>
+        Myrux ofrece una calculadora gratuita del Índice de Saturación de Langelier (LSI)
+        para evaluar la tendencia del agua a formar incrustaciones de carbonato de calcio
+        o a presentar corrosión en tuberías, cisternas, torres de enfriamiento, calderas
+        y sistemas de agua potable en hotelería e industria.
+        </p>
+        <p>El LSI se calcula con: pH, temperatura, TDS (sólidos disueltos totales), dureza cálcica y alcalinidad.</p>
+        <p>Aplicaciones: cisternas hoteleras, torres de enfriamiento, calderas, piscinas,
+        sistemas de ósmosis inversa y plantas de tratamiento de agua potable.</p>
+        <p>Interpretación: LSI negativo = agua corrosiva. LSI cercano a 0 = agua estable. LSI positivo = agua incrustante.</p>
+        </noscript>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # =========================
     # CSS
     # =========================
     st.markdown(
