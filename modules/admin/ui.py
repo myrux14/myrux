@@ -1,4 +1,5 @@
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 from core.auth import is_admin
@@ -754,75 +755,205 @@ def admin_panel():
             st.subheader("📈 Analítica pública")
 
             conn = get_connection()
-            cursor = conn.cursor()
 
             try:
 
-                # =====================================
-                # TOTAL VISITAS
-                # =====================================
-                cursor.execute("""
-                    SELECT COUNT(*)
-                    FROM analytics_visits
-                """)
-
-                total_visitas = cursor.fetchone()[0]
-
-                # =====================================
-                # VISITAS HOY
-                # =====================================
-                cursor.execute("""
-                    SELECT COUNT(*)
-                    FROM analytics_visits
-                    WHERE DATE(visit_date) = CURRENT_DATE
-                """)
-
-                visitas_hoy = cursor.fetchone()[0]
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.metric(
-                        "Visitas totales",
-                        total_visitas
-                    )
-
-                with col2:
-                    st.metric(
-                        "Visitas hoy",
-                        visitas_hoy
-                    )
-
-                # =====================================
-                # ÚLTIMAS VISITAS
-                # =====================================
-                cursor.execute("""
-                    SELECT *
-                    FROM analytics_visits
-                    ORDER BY id DESC
-                    LIMIT 100
-                """)
-
-                data = cursor.fetchall()
-
-                st.subheader(
-                    "Últimas visitas"
-                )
-
-                st.dataframe(
-                    data
+                df_vis = pd.read_sql_query(
+                    "SELECT * FROM analytics_visits ORDER BY id DESC",
+                    conn
                 )
 
             except Exception as e:
 
-                st.error(
-                    f"Error: {e}"
-                )
+                st.error(f"Error cargando visitas: {e}")
+                df_vis = pd.DataFrame()
 
             finally:
 
-                cursor.close()
                 conn.close()
+
+            if df_vis.empty:
+
+                st.info("Sin visitas registradas aún.")
+
+            else:
+
+                # ======================================
+                # EXCLUIR BOTS DE MÉTRICAS
+                # ======================================
+                df_humans = df_vis[
+                    df_vis.get("device_type", pd.Series(dtype=str)) != "bot"
+                ] if "device_type" in df_vis.columns else df_vis
+
+                # ======================================
+                # KPIs (UTC para coincidir con la DB)
+                # ======================================
+                total = len(df_humans)
+                hoy = 0
+                mes = 0
+
+                if "visit_date" in df_humans.columns:
+                    df_humans = df_humans.copy()
+                    df_humans["visit_date"] = pd.to_datetime(
+                        df_humans["visit_date"], errors="coerce"
+                    )
+                    today_utc = pd.Timestamp.now("UTC").normalize().replace(tzinfo=None)
+                    hoy = int(
+                        (df_humans["visit_date"].dt.normalize() == today_utc).sum()
+                    )
+                    mes = int(
+                        (
+                            (df_humans["visit_date"].dt.year == today_utc.year) &
+                            (df_humans["visit_date"].dt.month == today_utc.month)
+                        ).sum()
+                    )
+
+                k1, k2, k3 = st.columns(3)
+                k1.metric("Visitas totales", total)
+                k2.metric("Hoy", hoy)
+                k3.metric("Este mes", mes)
+
+                st.divider()
+
+                # ======================================
+                # GRÁFICAS
+                # ======================================
+                chart_cols = st.columns(2)
+
+                # --- Visitas por día ---
+                with chart_cols[0]:
+
+                    if "visit_date" in df_humans.columns and not df_humans.empty:
+
+                        df_daily = (
+                            df_humans
+                            .assign(dia=df_humans["visit_date"].dt.date)
+                            .groupby("dia")
+                            .size()
+                            .reset_index(name="visitas")
+                            .tail(30)
+                        )
+
+                        fig = px.bar(
+                            df_daily,
+                            x="dia",
+                            y="visitas",
+                            title="Visitas por día (últimos 30 días)",
+                            labels={"dia": "Fecha", "visitas": "Visitas"},
+                        )
+                        fig.update_layout(
+                            height=300,
+                            margin=dict(t=40, b=20, l=10, r=10)
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+
+                # --- Por país ---
+                with chart_cols[1]:
+
+                    if "country" in df_humans.columns:
+
+                        df_country = (
+                            df_humans["country"]
+                            .replace("", "Desconocido")
+                            .fillna("Desconocido")
+                            .value_counts()
+                            .head(10)
+                            .reset_index()
+                        )
+                        df_country.columns = ["país", "visitas"]
+
+                        fig2 = px.bar(
+                            df_country,
+                            x="visitas",
+                            y="país",
+                            orientation="h",
+                            title="Top países",
+                            labels={"visitas": "Visitas", "país": ""},
+                        )
+                        fig2.update_layout(
+                            height=300,
+                            margin=dict(t=40, b=20, l=10, r=10)
+                        )
+                        st.plotly_chart(fig2, use_container_width=True)
+
+                chart_cols2 = st.columns(2)
+
+                # --- Por dispositivo ---
+                with chart_cols2[0]:
+
+                    if "device_type" in df_humans.columns:
+
+                        df_dev = (
+                            df_humans["device_type"]
+                            .replace("", "Desconocido")
+                            .fillna("Desconocido")
+                            .value_counts()
+                            .reset_index()
+                        )
+                        df_dev.columns = ["dispositivo", "visitas"]
+
+                        fig3 = px.pie(
+                            df_dev,
+                            names="dispositivo",
+                            values="visitas",
+                            title="Dispositivo",
+                        )
+                        fig3.update_layout(
+                            height=300,
+                            margin=dict(t=40, b=20, l=10, r=10)
+                        )
+                        st.plotly_chart(fig3, use_container_width=True)
+
+                # --- Por navegador ---
+                with chart_cols2[1]:
+
+                    if "browser" in df_humans.columns:
+
+                        df_browser = (
+                            df_humans["browser"]
+                            .replace("", "Desconocido")
+                            .fillna("Desconocido")
+                            .value_counts()
+                            .head(8)
+                            .reset_index()
+                        )
+                        df_browser.columns = ["navegador", "visitas"]
+
+                        fig4 = px.bar(
+                            df_browser,
+                            x="visitas",
+                            y="navegador",
+                            orientation="h",
+                            title="Navegador",
+                            labels={"visitas": "Visitas", "navegador": ""},
+                        )
+                        fig4.update_layout(
+                            height=300,
+                            margin=dict(t=40, b=20, l=10, r=10)
+                        )
+                        st.plotly_chart(fig4, use_container_width=True)
+
+                st.divider()
+
+                # ======================================
+                # TABLA ÚLTIMAS VISITAS
+                # ======================================
+                st.subheader("Últimas visitas")
+
+                show_cols = [
+                    c for c in [
+                        "visit_date", "country", "city",
+                        "device_type", "browser", "os",
+                        "referrer", "language", "ip", "page"
+                    ]
+                    if c in df_vis.columns
+                ]
+
+                st.dataframe(
+                    df_vis[show_cols].head(100),
+                    height=300,
+                    use_container_width=True
+                )
 
         # ==================================================
         # TAB CONTACTOS

@@ -353,6 +353,32 @@ def run_migrations():
                 "011_add_id_to_analysis"
             )
 
+        # =====================================================
+        # 012 - ENRICH ANALYTICS VISITS
+        # =====================================================
+        if not migration_applied(cursor, "012_enrich_analytics_visits"):
+
+            new_cols = [
+                ("ip", "TEXT"),
+                ("country", "TEXT"),
+                ("city", "TEXT"),
+                ("device_type", "TEXT"),
+                ("browser", "TEXT"),
+                ("os", "TEXT"),
+                ("referrer", "TEXT"),
+                ("language", "TEXT"),
+            ]
+
+            for col_name, col_type in new_cols:
+                try:
+                    cursor.execute(
+                        f"ALTER TABLE analytics_visits ADD COLUMN {col_name} {col_type}"
+                    )
+                except Exception:
+                    pass
+
+            mark_migration(cursor, "012_enrich_analytics_visits")
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------
