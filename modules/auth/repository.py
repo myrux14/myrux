@@ -262,6 +262,115 @@ def get_all_users():
 
 
 # -----------------------------
+# LISTAR POR EMPRESA
+# -----------------------------
+def get_users_by_company(company_id):
+
+    conn = None
+    cursor = None
+
+    try:
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            f"""
+            SELECT
+                u.id,
+                u.username,
+                u.role,
+                u.active,
+                c.name as company
+
+            FROM users u
+
+            LEFT JOIN companies c
+                ON c.id = u.company_id
+
+            WHERE u.company_id = {p()}
+
+            ORDER BY u.id DESC
+            """,
+            (company_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        columns = [
+            desc[0]
+            for desc in cursor.description
+        ]
+
+        users = [
+            dict(zip(columns, row))
+            for row in rows
+        ]
+
+        return users
+
+    except Exception as e:
+
+        print(
+            "Error get_users_by_company:",
+            e
+        )
+
+        return []
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+
+# -----------------------------
+# VERIFICAR USUARIO PERTENECE A EMPRESA
+# -----------------------------
+def user_belongs_to_company(user_id, company_id):
+
+    conn = None
+    cursor = None
+
+    try:
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            f"""
+            SELECT id
+            FROM users
+            WHERE id = {p()}
+            AND company_id = {p()}
+            """,
+            (user_id, company_id)
+        )
+
+        return cursor.fetchone() is not None
+
+    except Exception as e:
+
+        print(
+            "Error user_belongs_to_company:",
+            e
+        )
+
+        return False
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+
+# -----------------------------
 # ACTUALIZAR
 # -----------------------------
 def update_user(

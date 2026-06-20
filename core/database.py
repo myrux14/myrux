@@ -42,7 +42,7 @@ def get_connection():
 # -----------------------------
 def init_db():
 
-    print("🚀 INIT_DB EJECUTÁNDOSE")
+    print("INIT_DB EJECUTANDOSE")
 
     conn = None
     cursor = None
@@ -156,7 +156,7 @@ def init_db():
         if conn:
             conn.close()
 
-    print("✅ INIT_DB TERMINADO")
+    print("INIT_DB TERMINADO")
 
 # =========================================
 # DB INFO

@@ -8,7 +8,7 @@ def seed_data():
     # 🔍 verificar si ya existe admin
     cursor.execute("SELECT * FROM users WHERE username='admin'")
     if cursor.fetchone():
-        print("⚠️ Usuario admin ya existe")
+        print("Usuario admin ya existe")
         conn.close()
         return
 
@@ -33,7 +33,7 @@ def seed_data():
     conn.commit()
     conn.close()
 
-    print("✅ Usuario admin creado")
+    print("Usuario admin creado")
     print("usuario: admin")
     print("password: admin123")
 

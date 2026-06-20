@@ -73,11 +73,11 @@ st.set_page_config(
 # =========================================
 if "db_initialized" not in st.session_state:
 
-    print("🔥 LLAMANDO INIT_DB")
+    print("LLAMANDO INIT_DB")
 
     init_db()
 
-    print("🔥 LLAMANDO MIGRATIONS")
+    print("LLAMANDO MIGRATIONS")
 
     run_migrations()
 
@@ -237,6 +237,19 @@ if role == "admin":
     )
 
     admin_panel()
+
+    st.stop()
+
+# =========================================
+# COMPANY ADMIN
+# =========================================
+elif role == "company_admin":
+
+    from modules.company_admin.ui import (
+        company_admin_panel
+    )
+
+    company_admin_panel()
 
     st.stop()
 
