@@ -379,6 +379,30 @@ def run_migrations():
 
             mark_migration(cursor, "012_enrich_analytics_visits")
 
+        # =====================================================
+        # 013 - SESSIONS
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "013_create_sessions"
+        ):
+
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS sessions (
+                id {id_type},
+                user_id INTEGER NOT NULL,
+                token TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP
+            )
+            """)
+
+            mark_migration(
+                cursor,
+                "013_create_sessions"
+            )
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------

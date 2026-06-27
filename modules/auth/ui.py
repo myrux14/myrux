@@ -2,7 +2,11 @@
 
 import streamlit as st
 from modules.auth.service import login_user
-import uuid
+
+from modules.auth.session import (
+    create_session,
+    delete_session
+)
 
 from modules.contact.repository import (
     create_contact_request
@@ -13,6 +17,11 @@ from modules.contact.repository import (
 # LOGOUT
 # =========================================
 def logout():
+
+    token = st.session_state.get("token")
+
+    if token:
+        delete_session(token)
 
     st.query_params.clear()
 
@@ -108,11 +117,16 @@ def login():
         # =================================
         elif isinstance(user, dict):
 
-            token = str(
-                uuid.uuid4()
+            token = create_session(
+                user["id"]
             )
 
-            # sesión
+            if not token:
+                st.sidebar.error(
+                    "Error creando sesion"
+                )
+                return False
+
             st.session_state[
                 "logged_in"
             ] = True
@@ -133,23 +147,8 @@ def login():
                 "token"
             ] = token
 
-            # =================================
-            # PERSISTENCIA URL
-            # =================================
             st.query_params.update({
-
-                "token": token,
-
-                "username":
-                    user["username"],
-
-                "role":
-                    user["role"],
-
-                "company_id":
-                    str(
-                        user["company_id"]
-                    )
+                "token": token
             })
 
             st.rerun()

@@ -55,6 +55,11 @@ from modules.analytics.tracking import (
     register_visit
 )
 
+from modules.auth.session import (
+    get_session,
+    cleanup_expired
+)
+
 # =========================================
 # CONFIG STREAMLIT
 # =========================================
@@ -81,6 +86,8 @@ if "db_initialized" not in st.session_state:
 
     run_migrations()
 
+    cleanup_expired()
+
     st.session_state[
         "db_initialized"
     ] = True
@@ -93,50 +100,40 @@ params = st.query_params
 if (
 
     "token" in params
-    and "username" in params
-    and "role" in params
-    and "company_id" in params
     and "logged_in"
     not in st.session_state
 
 ):
 
-    st.session_state[
-        "logged_in"
-    ] = True
-
-    st.session_state[
-        "token"
-    ] = params.get("token")
-
-    st.session_state[
-        "role"
-    ] = params.get("role")
-
-    st.session_state[
-        "company_id"
-    ] = int(
-        params.get("company_id")
+    session_user = get_session(
+        params.get("token")
     )
 
-    # =====================================
-    # RESTORE USER
-    # =====================================
-    st.session_state["user"] = {
+    if session_user:
 
-        "username":
-            params.get("username"),
+        st.session_state[
+            "logged_in"
+        ] = True
 
-        "role":
-            params.get("role"),
+        st.session_state[
+            "token"
+        ] = params.get("token")
 
-        "company_id":
-            int(
-                params.get(
-                    "company_id"
-                )
-            )
-    }
+        st.session_state[
+            "role"
+        ] = session_user["role"]
+
+        st.session_state[
+            "company_id"
+        ] = session_user["company_id"]
+
+        st.session_state[
+            "user"
+        ] = session_user
+
+    else:
+
+        st.query_params.clear()
 
 # =========================================
 # LOGIN
