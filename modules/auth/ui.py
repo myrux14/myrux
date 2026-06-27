@@ -5,7 +5,9 @@ from modules.auth.service import login_user
 
 from modules.auth.session import (
     create_session,
-    delete_session
+    delete_session,
+    log_login,
+    log_logout
 )
 
 from modules.contact.repository import (
@@ -16,22 +18,39 @@ from modules.contact.repository import (
 # =========================================
 # LOGOUT
 # =========================================
+MYRUX_SESSION_KEYS = [
+    "logged_in",
+    "user",
+    "role",
+    "company_id",
+    "token",
+    "db_initialized",
+    "visit_registered",
+    "debug_login",
+    "debug_login_type",
+]
+
+
 def logout(cookies):
 
     token = st.session_state.get("token")
+    user = st.session_state.get("user")
 
     if token:
         delete_session(token)
 
+    if isinstance(user, dict):
+        log_logout(
+            user.get("id"),
+            user.get("username")
+        )
+
     cookies["session_token"] = ""
     cookies.save()
 
-    keys = list(
-        st.session_state.keys()
-    )
-
-    for key in keys:
-        del st.session_state[key]
+    for key in MYRUX_SESSION_KEYS:
+        if key in st.session_state:
+            del st.session_state[key]
 
 
 # =========================================
@@ -137,6 +156,11 @@ def login(cookies):
 
             cookies["session_token"] = token
             cookies.save()
+
+            log_login(
+                user["id"],
+                user["username"]
+            )
 
             st.rerun()
 

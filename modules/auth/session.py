@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime, timedelta
 
+import streamlit as st
+
 from core.database import get_connection
 from core.db_utils import p
 from core.config import SESSION_TIMEOUT_MINUTES
@@ -188,6 +190,89 @@ def cleanup_expired():
     except Exception as e:
 
         print("Error cleanup_expired:", e)
+
+        if conn:
+            conn.rollback()
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+
+def _get_client_ip():
+
+    try:
+        headers = dict(st.context.headers)
+    except Exception:
+        return ""
+
+    forwarded = headers.get(
+        "x-forwarded-for", ""
+    )
+
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    return headers.get("x-real-ip", "")
+
+
+def log_login(user_id, username):
+
+    _log_action(
+        user_id,
+        username,
+        "login"
+    )
+
+
+def log_logout(user_id, username):
+
+    _log_action(
+        user_id,
+        username,
+        "logout"
+    )
+
+
+def _log_action(user_id, username, action):
+
+    conn = None
+    cursor = None
+
+    try:
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        ip = _get_client_ip()
+
+        cursor.execute(
+            f"""
+            INSERT INTO login_history (
+                user_id,
+                username,
+                action,
+                ip
+            )
+            VALUES (
+                {p()},
+                {p()},
+                {p()},
+                {p()}
+            )
+            """,
+            (user_id, username, action, ip)
+        )
+
+        conn.commit()
+
+    except Exception as e:
+
+        print("Error log_action:", e)
 
         if conn:
             conn.rollback()

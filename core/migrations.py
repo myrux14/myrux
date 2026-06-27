@@ -403,6 +403,31 @@ def run_migrations():
                 "013_create_sessions"
             )
 
+        # =====================================================
+        # 014 - LOGIN HISTORY
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "014_create_login_history"
+        ):
+
+            cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS login_history (
+                id {id_type},
+                user_id INTEGER NOT NULL,
+                username TEXT,
+                action TEXT NOT NULL,
+                ip TEXT,
+                created_at TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP
+            )
+            """)
+
+            mark_migration(
+                cursor,
+                "014_create_login_history"
+            )
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------
