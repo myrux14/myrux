@@ -16,14 +16,15 @@ from modules.contact.repository import (
 # =========================================
 # LOGOUT
 # =========================================
-def logout():
+def logout(cookies):
 
     token = st.session_state.get("token")
 
     if token:
         delete_session(token)
 
-    st.query_params.clear()
+    cookies["session_token"] = ""
+    cookies.save()
 
     keys = list(
         st.session_state.keys()
@@ -36,8 +37,7 @@ def logout():
 # =========================================
 # LOGIN
 # =========================================
-def login():
-    
+def login(cookies):
 
     st.sidebar.markdown(
         "## 🔐 Cuenta Myrux"
@@ -57,7 +57,6 @@ def login():
 
         user = st.session_state.get("user")
 
-        # validar sesión
         if isinstance(user, dict):
 
             st.sidebar.success(
@@ -68,7 +67,7 @@ def login():
                 "Cerrar sesión"
             ):
 
-                logout()
+                logout(cookies)
                 st.rerun()
 
             return True
@@ -91,17 +90,6 @@ def login():
             username,
             password
         )
-
-        # =========================================
-        # DEBUG LOGIN PERSISTENTE
-        # =========================================
-        st.session_state[
-            "debug_login"
-        ] = user
-
-        st.session_state[
-            "debug_login_type"
-        ] = str(type(user))
 
         # =================================
         # USER INACTIVE
@@ -147,9 +135,8 @@ def login():
                 "token"
             ] = token
 
-            st.query_params.update({
-                "token": token
-            })
+            cookies["session_token"] = token
+            cookies.save()
 
             st.rerun()
 
@@ -224,4 +211,3 @@ def login():
                 )
 
     return False
-

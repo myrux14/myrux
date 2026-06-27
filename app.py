@@ -1,6 +1,10 @@
 import pandas as pd
 import streamlit as st
 
+from streamlit_cookies_manager import (
+    EncryptedCookieManager
+)
+
 from modules.public.lsi_simulator import (
     render_public_lsi
 )
@@ -40,7 +44,8 @@ from modules.auth.service import (
 # =========================================
 from core.config import (
     APP_NAME,
-    ENV
+    ENV,
+    COOKIE_SECRET
 )
 
 from modules.auth.ui import (
@@ -69,10 +74,17 @@ st.set_page_config(
     layout="wide"
 )
 
+# =========================================
+# COOKIES
+# =========================================
+cookies = EncryptedCookieManager(
+    prefix="myrux_",
+    password=COOKIE_SECRET
+)
 
-# =========================================
-# INIT DB SOLO LOCAL
-# =========================================
+if not cookies.ready():
+    st.stop()
+
 # =========================================
 # INIT DB + MIGRATIONS
 # =========================================
@@ -93,54 +105,54 @@ if "db_initialized" not in st.session_state:
     ] = True
 
 # =========================================
-# RESTAURAR SESIÓN
+# RESTAURAR SESIÓN DESDE COOKIE
 # =========================================
-params = st.query_params
-
 if (
 
-    "token" in params
-    and "logged_in"
+    "logged_in"
     not in st.session_state
 
 ):
 
-    session_user = get_session(
-        params.get("token")
-    )
+    token = cookies.get("session_token")
 
-    if session_user:
+    if token:
 
-        st.session_state[
-            "logged_in"
-        ] = True
+        session_user = get_session(token)
 
-        st.session_state[
-            "token"
-        ] = params.get("token")
+        if session_user:
 
-        st.session_state[
-            "role"
-        ] = session_user["role"]
+            st.session_state[
+                "logged_in"
+            ] = True
 
-        st.session_state[
-            "company_id"
-        ] = session_user["company_id"]
+            st.session_state[
+                "token"
+            ] = token
 
-        st.session_state[
-            "user"
-        ] = session_user
+            st.session_state[
+                "role"
+            ] = session_user["role"]
 
-    else:
+            st.session_state[
+                "company_id"
+            ] = session_user["company_id"]
 
-        st.query_params.clear()
+            st.session_state[
+                "user"
+            ] = session_user
+
+        else:
+
+            cookies["session_token"] = ""
+            cookies.save()
 
 # =========================================
 # LOGIN
 # =========================================
 db_info = check_environment()
 
-logged = login()
+logged = login(cookies)
 
 if not logged:
 
@@ -161,7 +173,6 @@ if not logged:
 
     st.stop()
 
-    
 
 # =========================================
 # VALIDACIÓN SESIÓN
@@ -284,5 +295,3 @@ else:
     )
 
     st.stop()
-
-

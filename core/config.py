@@ -86,6 +86,11 @@ APP_VERSION = "1.0.0"
 # -----------------------------
 SESSION_TIMEOUT_MINUTES = 60
 
+COOKIE_SECRET = os.getenv(
+    "COOKIE_SECRET",
+    "myrux-change-this-in-production"
+)
+
 # -----------------------------
 # PARÁMETROS DE NEGOCIO (RSI)
 # -----------------------------
