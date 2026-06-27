@@ -1,9 +1,13 @@
 # core/database.py
 
+import os
+import secrets
+import string
+
 import psycopg2
 import sqlite3
 from sqlalchemy import create_engine
-from core.config import DATABASE_URL, DB_TYPE, DB_PATH
+from core.config import DATABASE_URL, DB_TYPE, DB_PATH, ENV
 from core.security import hash_password
 
 from core.config import (
@@ -136,7 +140,31 @@ def init_db():
         existing_user = cursor.fetchone()
 
         if not existing_user:
-            hashed = hash_password("admin123")
+
+            admin_pass = os.getenv("ADMIN_PASSWORD")
+
+            if not admin_pass:
+                if ENV == "production":
+                    raise ValueError(
+                        "ADMIN_PASSWORD es obligatoria "
+                        "en produccion"
+                    )
+
+                alphabet = (
+                    string.ascii_letters
+                    + string.digits
+                )
+                admin_pass = "".join(
+                    secrets.choice(alphabet)
+                    for _ in range(16)
+                )
+
+                print(
+                    "=== ADMIN PASSWORD: "
+                    f"{admin_pass} ==="
+                )
+
+            hashed = hash_password(admin_pass)
 
             cursor.execute(f"""
                 INSERT INTO users (username, password, role, active, company_id)
@@ -163,11 +191,17 @@ def init_db():
 # =========================================
 def get_db_info():
 
+    if DB_TYPE == "postgres":
+        from urllib.parse import urlparse
+        parsed = urlparse(DATABASE_URL)
+        db_display = parsed.hostname or "postgres"
+        user_display = parsed.username or "—"
+    else:
+        db_display = "SQLite"
+        user_display = "local"
+
     return {
-
-        "db": DATABASE_URL,
-
+        "db": db_display,
         "host": DB_TYPE,
-
-        "user": "local"
+        "user": user_display
     }
