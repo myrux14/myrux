@@ -1,6 +1,15 @@
 import pandas as pd
 import streamlit as st
 
+# =========================================
+# CONFIG STREAMLIT (debe ser lo primero)
+# =========================================
+st.set_page_config(
+    page_title="Myrux | Análisis digital de la calidad del agua",
+    page_icon="📈",
+    layout="wide"
+)
+
 from streamlit_cookies_manager import (
     EncryptedCookieManager
 )
@@ -39,9 +48,6 @@ from modules.auth.service import (
     create_user
 )
 
-# =========================================
-# IMPORTS
-# =========================================
 from core.config import (
     APP_NAME,
     ENV,
@@ -63,15 +69,6 @@ from modules.analytics.tracking import (
 from modules.auth.session import (
     get_session,
     cleanup_expired
-)
-
-# =========================================
-# CONFIG STREAMLIT
-# =========================================
-st.set_page_config(
-    page_title="Myrux | Análisis digital de la calidad del agua",
-    page_icon="📈",
-    layout="wide"
 )
 
 # =========================================
@@ -205,12 +202,8 @@ if role == "admin":
     )
 
     st.sidebar.info(
-        f"""
-ENV: {db_info.get('env')}
-DB: {db_info.get('db')}
-HOST: {db_info.get('host')}
-USER: {db_info.get('user')}
-"""
+        f"ENV: {db_info.get('env')} | "
+        f"DB: {db_info.get('host')}"
     )
 
     # =====================================
