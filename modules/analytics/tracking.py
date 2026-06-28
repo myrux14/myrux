@@ -21,17 +21,37 @@ def _get_ip(headers: dict) -> str:
     return headers.get("x-real-ip", "")
 
 
+def _anonymize_ip(ip: str) -> str:
+    if not ip:
+        return ""
+
+    if ":" in ip:
+        # IPv6: cortar últimos 4 grupos
+        parts = ip.split(":")
+        if len(parts) > 4:
+            return ":".join(parts[:4]) + "::"
+        return ip
+
+    # IPv4: reemplazar último octeto
+    parts = ip.split(".")
+    if len(parts) == 4:
+        parts[3] = "0"
+        return ".".join(parts)
+
+    return ip
+
+
 def _geo_from_ip(ip: str) -> dict:
     if not ip or ip.startswith(_PRIVATE_PREFIXES):
         return {"country": "local", "city": "local"}
     try:
         r = requests.get(
-            f"http://ip-api.com/json/{ip}?fields=status,country,city",
+            f"https://ipapi.co/{ip}/json/",
             timeout=2
         )
         data = r.json()
-        if data.get("status") == "success":
-            return {"country": data.get("country", ""), "city": data.get("city", "")}
+        if not data.get("error"):
+            return {"country": data.get("country_name", ""), "city": data.get("city", "")}
     except Exception:
         pass
     return {"country": "", "city": ""}
@@ -68,8 +88,9 @@ def register_visit(page: str = "public_lsi"):
     except Exception:
         headers = {}
 
-    ip = _get_ip(headers)
-    geo = _geo_from_ip(ip)
+    raw_ip = _get_ip(headers)
+    geo = _geo_from_ip(raw_ip)
+    anon_ip = _anonymize_ip(raw_ip)
     ua_info = _parse_ua(headers.get("user-agent", ""))
     referrer = headers.get("referer", "")
     language = headers.get("accept-language", "").split(",")[0].strip()
@@ -93,7 +114,7 @@ def register_visit(page: str = "public_lsi"):
             """,
             (
                 page,
-                ip,
+                anon_ip,
                 geo["country"],
                 geo["city"],
                 ua_info["device_type"],
