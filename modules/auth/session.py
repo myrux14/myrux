@@ -206,7 +206,11 @@ def cleanup_expired():
 def _get_client_ip():
 
     try:
-        headers = dict(st.context.headers)
+        headers = {
+            k.lower(): v
+            for k, v in
+            dict(st.context.headers).items()
+        }
     except Exception:
         return ""
 

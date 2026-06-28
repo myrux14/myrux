@@ -15,10 +15,14 @@ _PRIVATE_PREFIXES = (
 
 
 def _get_ip(headers: dict) -> str:
-    forwarded = headers.get("x-forwarded-for", "")
+    h = {
+        k.lower(): v
+        for k, v in headers.items()
+    }
+    forwarded = h.get("x-forwarded-for", "")
     if forwarded:
         return forwarded.split(",")[0].strip()
-    return headers.get("x-real-ip", "")
+    return h.get("x-real-ip", "")
 
 
 def _anonymize_ip(ip: str) -> str:
