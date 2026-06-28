@@ -1,7 +1,12 @@
 # modules/auth/ui.py
 
+from datetime import datetime, timedelta
+
 import streamlit as st
 from modules.auth.service import login_user
+
+MAX_LOGIN_ATTEMPTS = 5
+LOCKOUT_MINUTES = 5
 
 from modules.auth.session import (
     create_session,
@@ -103,6 +108,37 @@ def login(cookies):
         type="password"
     )
 
+    # =====================================
+    # RATE LIMIT
+    # =====================================
+    attempts = st.session_state.get(
+        "login_attempts", 0
+    )
+
+    locked_until = st.session_state.get(
+        "login_locked_until"
+    )
+
+    if locked_until and datetime.utcnow() < locked_until:
+
+        remaining = int(
+            (locked_until - datetime.utcnow())
+            .total_seconds() / 60
+        ) + 1
+
+        st.sidebar.error(
+            f"Demasiados intentos. "
+            f"Intenta en {remaining} min."
+        )
+
+        return False
+
+    if locked_until and datetime.utcnow() >= locked_until:
+
+        st.session_state["login_attempts"] = 0
+        st.session_state["login_locked_until"] = None
+        attempts = 0
+
     if st.sidebar.button("Entrar"):
 
         user = login_user(
@@ -123,6 +159,11 @@ def login(cookies):
         # LOGIN OK
         # =================================
         elif isinstance(user, dict):
+
+            st.session_state["login_attempts"] = 0
+            st.session_state[
+                "login_locked_until"
+            ] = None
 
             token = create_session(
                 user["id"]
@@ -169,9 +210,38 @@ def login(cookies):
         # =================================
         else:
 
-            st.sidebar.error(
-                "Credenciales incorrectas"
-            )
+            attempts += 1
+
+            st.session_state[
+                "login_attempts"
+            ] = attempts
+
+            if attempts >= MAX_LOGIN_ATTEMPTS:
+
+                st.session_state[
+                    "login_locked_until"
+                ] = (
+                    datetime.utcnow()
+                    + timedelta(
+                        minutes=LOCKOUT_MINUTES
+                    )
+                )
+
+                st.sidebar.error(
+                    f"Demasiados intentos. "
+                    f"Bloqueado {LOCKOUT_MINUTES} min."
+                )
+
+            else:
+
+                remaining = (
+                    MAX_LOGIN_ATTEMPTS - attempts
+                )
+
+                st.sidebar.error(
+                    f"Credenciales incorrectas. "
+                    f"{remaining} intentos restantes."
+                )
 
     # =====================================
     # CONTACTO

@@ -88,15 +88,19 @@ def get_analysis_by_system(
 # =========================================
 # DELETE ANALYSIS
 # =========================================
-def delete_analysis(record_id):
+def delete_analysis(record_id, company_id):
 
     conn = get_connection()
 
     cursor = conn.cursor()
 
     cursor.execute(
-        f"DELETE FROM analysis WHERE id = {p()}",
-        (record_id,)
+        f"""
+        DELETE FROM analysis
+        WHERE id = {p()}
+        AND company_id = {p()}
+        """,
+        (record_id, company_id)
     )
 
     conn.commit()

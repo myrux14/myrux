@@ -434,7 +434,8 @@ def render_field_data_table(df):
                             # DELETE DB
                             # ==========================
                             delete_analysis(
-                                selected_id
+                                selected_id,
+                                st.session_state.company_id
                             )
 
                             # ==========================

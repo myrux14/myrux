@@ -452,3 +452,26 @@ def render_public_lsi():
         aunque puede variar dependiendo del tipo de sistema y los materiales de construcción.
         """
     )
+
+    # =========================================
+    # FOOTER — AVISO DE PRIVACIDAD
+    # =========================================
+    st.divider()
+
+    with st.expander("Aviso de privacidad"):
+
+        st.markdown(
+            '<div style="font-size:10px;line-height:1;">'
+            '<p style="margin:0 0 4px 0;"><b>Responsable:</b> Myrux Water Analytics Platform · <b>Contacto:</b> myrux14@gmail.com</p>'
+            '<p style="margin:0 0 4px 0;"><b>Datos que recopilamos.</b> Visitantes publicos: ubicacion aproximada (pais, ciudad), dispositivo, navegador y sistema operativo. La IP se almacena anonimizada. Usuarios registrados: nombre de usuario, historial de acceso (fecha, hora, IP) y datos operativos ingresados.</p>'
+            '<p style="margin:0 0 4px 0;"><b>Finalidad.</b> Mejorar el servicio, seguridad (detectar accesos no autorizados) y estadisticas de uso agregadas.</p>'
+            '<p style="margin:0 0 4px 0;"><b>Comparticion.</b> No compartimos datos personales con terceros, salvo servicios tecnicos necesarios para operar la plataforma.</p>'
+            '<p style="margin:0 0 4px 0;"><b>Derechos ARCO.</b> Acceso, Rectificacion, Cancelacion y Oposicion: escribir a myrux14@gmail.com.</p>'
+            '<p style="margin:0;"><i>Ultima actualizacion: junio 2026</i></p>'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+    st.caption(
+        "© 2026 Myrux Water Analytics Platform"
+    )
