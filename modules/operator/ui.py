@@ -1511,10 +1511,6 @@ def operator_dashboard():
     # ======================================
     # LOAD HISTORICAL DATA
     # ======================================
-    from modules.analytics.repository import (
-        get_analysis_by_system
-    )
-
     df = get_analysis_by_system(
 
         company_id=st.session_state.company_id,
