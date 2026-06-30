@@ -53,14 +53,16 @@ def _geo_from_ip(ip: str) -> dict:
         return {"country": "local", "city": "local"}
     try:
         r = requests.get(
-            f"https://ipapi.co/{ip}/json/",
-            timeout=2
+            f"https://ipwho.is/{ip}",
+            timeout=3
         )
         data = r.json()
-        if not data.get("error"):
-            return {"country": data.get("country_name", ""), "city": data.get("city", "")}
-    except Exception:
-        pass
+        if data.get("success"):
+            return {"country": data.get("country", ""), "city": data.get("city", "")}
+        else:
+            print("geo lookup fallo:", data.get("message"))
+    except Exception as e:
+        print("Error geo lookup:", e)
     return {"country": "", "city": ""}
 
 
