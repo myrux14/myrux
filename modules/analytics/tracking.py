@@ -48,21 +48,49 @@ def _anonymize_ip(ip: str) -> str:
     return ip
 
 
+def _geo_ipwhois(ip: str):
+    r = requests.get(f"https://ipwho.is/{ip}", timeout=3)
+    data = r.json()
+    if not data.get("success"):
+        raise ValueError(data.get("message", "rate limit"))
+    return {"country": data.get("country", ""), "city": data.get("city", "")}
+
+
+def _geo_geojs(ip: str):
+    r = requests.get(
+        f"https://get.geojs.io/v1/ip/geo/{ip}.json",
+        timeout=3
+    )
+    data = r.json()
+    if "country" not in data:
+        raise ValueError("sin country")
+    return {"country": data.get("country", ""), "city": data.get("city", "")}
+
+
+def _geo_ipinfo(ip: str):
+    r = requests.get(f"https://ipinfo.io/{ip}/json", timeout=3)
+    data = r.json()
+    if "bogon" in data or "country" not in data:
+        raise ValueError("sin country")
+    return {"country": data.get("country", ""), "city": data.get("city", "")}
+
+
+_GEO_PROVIDERS = (_geo_geojs, _geo_ipwhois, _geo_ipinfo)
+
+
 def _geo_from_ip(ip: str) -> dict:
     if not ip or ip.startswith(_PRIVATE_PREFIXES):
         return {"country": "local", "city": "local"}
-    try:
-        r = requests.get(
-            f"https://ipwho.is/{ip}",
-            timeout=3
-        )
-        data = r.json()
-        if data.get("success"):
-            return {"country": data.get("country", ""), "city": data.get("city", "")}
-        else:
-            print("geo lookup fallo:", data.get("message"))
-    except Exception as e:
-        print("Error geo lookup:", e)
+
+    for provider in _GEO_PROVIDERS:
+        try:
+            return provider(ip)
+        except Exception as e:
+            print(
+                f"geo lookup fallo ({provider.__name__}):",
+                e
+            )
+
     return {"country": "", "city": ""}
 
 
