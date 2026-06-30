@@ -50,6 +50,21 @@ from modules.operator.optimization import (
     render_optimization
 )
 
+from modules.analytics.service import (
+    calcular_rsi,
+    clasificar_rsi
+)
+
+from core.rsi_log import (
+    calcular_rsi_log,
+    componentes_rsi_log
+)
+
+from core.rsi_table import (
+    calcular_rsi as calcular_rsi_tab,
+    componentes_tabla_rsi
+)
+
 
 def operator_dashboard():
 
@@ -631,6 +646,349 @@ def operator_dashboard():
                     """
                 )
 
+                # ==================================
+                # INICIALIZAR KEYS
+                # ==================================
+                if "rsi_uploader_key" not in st.session_state:
+
+                    st.session_state.rsi_uploader_key = 0
+
+                if "rsi_upload_success" not in st.session_state:
+
+                    st.session_state.rsi_upload_success = False
+
+                # ==================================
+                # FILE UPLOADER
+                # ==================================
+                uploaded_file_rsi = st.file_uploader(
+
+                    "Selecciona archivo Excel",
+
+                    type=["xlsx", "xls", "csv"],
+
+                    key=f"rsi_uploader_{st.session_state.rsi_uploader_key}"
+
+                )
+
+                # ==================================
+                # BOTÓN CARGAR
+                # ==================================
+                if uploaded_file_rsi is not None:
+
+                    if st.button(
+                        "📤 Cargar archivo",
+                        key="rsi_upload_btn"
+                    ):
+
+                        try:
+
+                            # ==========================
+                            # LEER EXCEL
+                            # ==========================
+                            if uploaded_file_rsi.name.endswith(
+                                (".xlsx", ".xls")
+                            ):
+
+                                df = pd.read_excel(
+                                    uploaded_file_rsi
+                                )
+
+                            # ==========================
+                            # LEER CSV
+                            # ==========================
+                            else:
+
+                                df = pd.read_csv(
+                                    uploaded_file_rsi
+                                )
+
+                            # ==========================
+                            # CALCULAR COMPONENTES RSI
+                            # ==========================
+                            results = df.apply(
+
+                                lambda row:
+                                componentes_rsi_log(
+
+                                    ph=row["pH"],
+
+                                    tds=row["tds_ppm"],
+
+                                    temp=row["temperature_c"],
+
+                                    calcium=row[
+                                        "calcium_hardness"
+                                    ],
+
+                                    alkalinity=row[
+                                        "alkalinity"
+                                    ]
+
+                                ),
+
+                                axis=1
+
+                            )
+
+                            # ==========================
+                            # RESULTADOS → DATAFRAME
+                            # ==========================
+                            results_df = pd.DataFrame(
+                                results.tolist()
+                            )
+
+                            # ==========================
+                            # CONCATENAR RESULTADOS
+                            # ==========================
+                            df = pd.concat(
+
+                                [
+                                    df,
+                                    results_df
+                                ],
+
+                                axis=1
+                            )
+
+                            # ==================================
+                            # RSI TABLAS
+                            # ==================================
+                            rsi_tab_results = []
+
+                            for _, row in df.iterrows():
+
+                                try:
+
+                                    result = calcular_rsi_tab(
+
+                                        ph=float(row["pH"]),
+
+                                        temperature_c=float(
+                                            row["temperature_c"]
+                                        ),
+
+                                        tds_ppm=float(
+                                            row["tds_ppm"]
+                                        ),
+
+                                        calcium_hardness=float(
+                                            row["calcium_hardness"]
+                                        ),
+
+                                        alkalinity=float(
+                                            row["alkalinity"]
+                                        )
+
+                                    )
+
+                                    rsi_tab_results.append(result)
+
+                                except Exception as e:
+
+                                    print("ERROR RSI TAB:", e)
+
+                                    rsi_tab_results.append(None)
+
+                            # ==================================
+                            # GUARDAR RESULTADOS
+                            # ==================================
+                            df["rsi_tablas"] = rsi_tab_results
+
+                            # ==========================
+                            # IMPORTAR DATETIME
+                            # ==========================
+                            from datetime import datetime
+
+                            # ==================================
+                            # SISTEMA SELECCIONADO
+                            # ==================================
+                            selected_system_id = (
+                                st.session_state.system_id
+                            )
+
+                            # ==================================
+                            # COLUMNAS EMPRESA
+                            # ==================================
+                            df["company_id"] = (
+                                st.session_state.company_id
+                            )
+
+                            df["company_name"] = (
+                                company_name
+                            )
+
+                            # ==================================
+                            # COLUMNAS SISTEMA
+                            # ==================================
+                            df["system_id"] = (
+                                selected_system_id
+                            )
+
+                            df["system_name"] = (
+                                system["system_name"]
+                            )
+
+                            # ==================================
+                            # MÉTODO UTILIZADO
+                            # ==================================
+                            df["method"] = (
+                                "RSI Logarítmico"
+                            )
+
+                            # ==================================
+                            # FECHA CREACIÓN
+                            # ==================================
+                            df["created_at"] = (
+                                datetime.now().isoformat()
+                            )
+
+                            # ==================================
+                            # DATAFRAME PARA SQL
+                            # ==================================
+                            df_db = pd.DataFrame({
+
+                                "company_id":
+                                    df["company_id"],
+
+                                "company_name":
+                                    df["company_name"],
+
+                                "system_id":
+                                    df["system_id"],
+
+                                "system_name":
+                                    df["system_name"],
+
+                                "method":
+                                    df["method"],
+
+                                "sample_date":
+                                    df["date"],
+
+                                "ph":
+                                    df["pH"],
+
+                                "temperature_c":
+                                    df["temperature_c"],
+
+                                "tds_ppm":
+                                    df["tds_ppm"],
+
+                                "calcium_hardness":
+                                    df["calcium_hardness"],
+
+                                "alkalinity":
+                                    df["alkalinity"],
+
+                                "factor_a":
+                                    df["factor_A"],
+
+                                "factor_b":
+                                    df["factor_B"],
+
+                                "factor_c":
+                                    df["factor_C"],
+
+                                "factor_d":
+                                    df["factor_D"],
+
+                                "ph_s":
+                                    df["ph_saturacion"],
+
+                                "rsi":
+                                    df["rsi"],
+
+                                "rsi_tablas":
+                                    df["rsi_tablas"],
+
+                                "created_at":
+                                    df["created_at"]
+                            })
+
+                            # ==================================
+                            # GUARDAR EN DATABASE
+                            # ==================================
+                            save_analysis(df_db)
+
+                            # ==================================
+                            # MENSAJE SUCCESS
+                            # ==================================
+                            st.session_state[
+                                "rsi_upload_success"
+                            ] = True
+
+                            # ==================================
+                            # RESET FILE UPLOADER
+                            # ==================================
+                            st.session_state[
+                                "rsi_uploader_key"
+                            ] += 1
+
+                            # ==================================
+                            # RECARGAR APP
+                            # ==================================
+                            st.rerun()
+
+                        # ==================================
+                        # CAPTURA ERRORES
+                        # ==================================
+                        except Exception as e:
+
+                            st.exception(e)
+
+                # ==================================
+                # MENSAJE ÉXITO
+                # ==================================
+                if st.session_state.rsi_upload_success:
+
+                    st.success(
+                        "Archivo cargado correctamente"
+                    )
+
+                # ==================================
+                # TABLA DE DATOS SIMPLE
+                # ==================================
+                st.divider()
+
+                st.subheader(
+                    "📋 Datos guardados"
+                )
+
+                df_rsi_hist = get_analysis_by_system(
+                    company_id=st.session_state.company_id,
+                    system_id=st.session_state.system_id
+                )
+
+                if df_rsi_hist is not None and not df_rsi_hist.empty:
+
+                    df_show = df_rsi_hist[
+                        [
+                            c for c in [
+                                "sample_date",
+                                "ph",
+                                "rsi",
+                                "rsi_tablas",
+                                "method"
+                            ]
+                            if c in df_rsi_hist.columns
+                        ]
+                    ].copy()
+
+                    df_show["clasificacion"] = df_show["rsi"].apply(
+                        clasificar_rsi
+                    )
+
+                    st.dataframe(
+                        df_show,
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info(
+                        "Sin registros guardados todavía"
+                    )
+
     # ======================================
     # CENTER
     # ======================================
@@ -639,11 +997,16 @@ def operator_dashboard():
         with st.container(border=True):
 
             # ======================================
+            # MODO (LSI / RSI)
+            # ======================================
+            is_rsi = "RSI" in chemistry_model
+
+            # ======================================
             # RESULTADOS SESSION
             # ======================================
-            lsi_result = st.session_state.get(
+            calc_result = st.session_state.get(
 
-                "lsi_result",
+                "rsi_result" if is_rsi else "lsi_result",
 
                 {
                     "log": "****",
@@ -651,20 +1014,31 @@ def operator_dashboard():
                 }
             )
 
-            
+
 
             st.subheader(
                 "🧮 Calculadora"
             )
 
-           
-            st.success(f"""
+            if is_rsi:
 
-            LSI_log: {lsi_result['log']}
+                st.success(f"""
 
-            LSI_tab: {lsi_result['tab']}
+                RSI_log: {calc_result['log']}
 
-            """)
+                RSI_tab: {calc_result['tab']}
+
+                """)
+
+            else:
+
+                st.success(f"""
+
+                LSI_log: {calc_result['log']}
+
+                LSI_tab: {calc_result['tab']}
+
+                """)
 
             # ==================================
             # INPUTS EN 2 COLUMNAS
@@ -738,6 +1112,63 @@ def operator_dashboard():
                             "Completa todos los parámetros"
                         )
 
+                    elif is_rsi:
+
+                        # ==============================
+                        # RSI LOGARÍTMICO
+                        # ==============================
+                        rsi_log = calcular_rsi_log(
+
+                            ph=ph,
+
+                            temp_c=temperature,
+
+                            tds=tds,
+
+                            calcium=calcium,
+
+                            alkalinity=alkalinity
+
+                        )
+
+                        # ==============================
+                        # RSI TABLAS
+                        # ==============================
+                        rsi_tab = calcular_rsi_tab(
+
+                            ph=ph,
+
+                            temperature_c=temperature,
+
+                            tds_ppm=tds,
+
+                            calcium_hardness=calcium,
+
+                            alkalinity=alkalinity
+
+                        )
+
+                        # ==============================
+                        # SAVE SESSION
+                        # ==============================
+                        st.session_state[
+                            "rsi_result"
+                        ] = {
+
+                            "log": round(
+                                rsi_log,
+                                2
+                            ),
+
+                            "tab": round(
+                                rsi_tab,
+                                2
+                            )
+
+                        }
+
+                        st.rerun()
+
                     else:
 
                         # ==============================
@@ -808,115 +1239,229 @@ def operator_dashboard():
 
                         from datetime import datetime
 
-                        # ==========================
-                        # CALCULAR LSI
-                        # ==========================
-                        lsi_log = calcular_lsi_log(
+                        if is_rsi:
 
-                            ph=ph,
+                            # ==========================
+                            # CALCULAR RSI
+                            # ==========================
+                            rsi_log = calcular_rsi_log(
 
-                            temp_c=temperature,
+                                ph=ph,
 
-                            tds=tds,
+                                temp_c=temperature,
 
-                            calcium=calcium,
+                                tds=tds,
 
-                            alkalinity=alkalinity
+                                calcium=calcium,
 
-                        )
+                                alkalinity=alkalinity
 
-                        lsi_tab = calcular_lsi_tab(
+                            )
 
-                            ph=ph,
+                            rsi_tab = calcular_rsi_tab(
 
-                            temperature_c=temperature,
+                                ph=ph,
 
-                            tds_ppm=tds,
+                                temperature_c=temperature,
 
-                            calcium_hardness=calcium,
+                                tds_ppm=tds,
 
-                            alkalinity=alkalinity
+                                calcium_hardness=calcium,
 
-                        )
+                                alkalinity=alkalinity
 
-                        # ==========================
-                        # COMPONENTES
-                        # ==========================
-                        result = componentes_log(
+                            )
 
-                            ph=ph,
+                            # ==========================
+                            # COMPONENTES
+                            # ==========================
+                            result = componentes_rsi_log(
 
-                            tds=tds,
+                                ph=ph,
 
-                            temp=temperature,
+                                tds=tds,
 
-                            calcium=calcium,
+                                temp=temperature,
 
-                            alkalinity=alkalinity
+                                calcium=calcium,
 
-                        )
+                                alkalinity=alkalinity
 
-                        # ==========================
-                        # DATAFRAME
-                        # ==========================
-                        df_db = pd.DataFrame([{
+                            )
 
-                            "company_id":
-                                st.session_state.company_id,
+                            # ==========================
+                            # DATAFRAME
+                            # ==========================
+                            df_db = pd.DataFrame([{
 
-                            "company_name":
-                                company_name,
+                                "company_id":
+                                    st.session_state.company_id,
 
-                            "system_id":
-                                st.session_state.system_id,
+                                "company_name":
+                                    company_name,
 
-                            "system_name":
-                                system["system_name"],
+                                "system_id":
+                                    st.session_state.system_id,
 
-                            "method":
-                                "LSI Manual",
+                                "system_name":
+                                    system["system_name"],
 
-                            "sample_date":
-                                datetime.now().date(),
+                                "method":
+                                    "RSI Manual",
 
-                            "ph":
-                                ph,
+                                "sample_date":
+                                    datetime.now().date(),
 
-                            "temperature_c":
-                                temperature,
+                                "ph":
+                                    ph,
 
-                            "tds_ppm":
-                                tds,
+                                "temperature_c":
+                                    temperature,
 
-                            "calcium_hardness":
-                                calcium,
+                                "tds_ppm":
+                                    tds,
 
-                            "alkalinity":
-                                alkalinity,
+                                "calcium_hardness":
+                                    calcium,
 
-                            "factor_a":
-                                result["factor_A"],
+                                "alkalinity":
+                                    alkalinity,
 
-                            "factor_b":
-                                result["factor_B"],
+                                "factor_a":
+                                    result["factor_A"],
 
-                            "factor_c":
-                                result["factor_C"],
+                                "factor_b":
+                                    result["factor_B"],
 
-                            "factor_d":
-                                result["factor_D"],
+                                "factor_c":
+                                    result["factor_C"],
 
-                            "ph_s":
-                                result["ph_saturacion"],
+                                "factor_d":
+                                    result["factor_D"],
 
-                            "lsi": round(lsi_log, 2),
+                                "ph_s":
+                                    result["ph_saturacion"],
 
-                            "lsi_tablas": round(lsi_tab, 2),
+                                "rsi": round(rsi_log, 2),
 
-                            "created_at":
-                                datetime.now().isoformat()
+                                "rsi_tablas": round(rsi_tab, 2),
 
-                        }])
+                                "created_at":
+                                    datetime.now().isoformat()
+
+                            }])
+
+                        else:
+
+                            # ==========================
+                            # CALCULAR LSI
+                            # ==========================
+                            lsi_log = calcular_lsi_log(
+
+                                ph=ph,
+
+                                temp_c=temperature,
+
+                                tds=tds,
+
+                                calcium=calcium,
+
+                                alkalinity=alkalinity
+
+                            )
+
+                            lsi_tab = calcular_lsi_tab(
+
+                                ph=ph,
+
+                                temperature_c=temperature,
+
+                                tds_ppm=tds,
+
+                                calcium_hardness=calcium,
+
+                                alkalinity=alkalinity
+
+                            )
+
+                            # ==========================
+                            # COMPONENTES
+                            # ==========================
+                            result = componentes_log(
+
+                                ph=ph,
+
+                                tds=tds,
+
+                                temp=temperature,
+
+                                calcium=calcium,
+
+                                alkalinity=alkalinity
+
+                            )
+
+                            # ==========================
+                            # DATAFRAME
+                            # ==========================
+                            df_db = pd.DataFrame([{
+
+                                "company_id":
+                                    st.session_state.company_id,
+
+                                "company_name":
+                                    company_name,
+
+                                "system_id":
+                                    st.session_state.system_id,
+
+                                "system_name":
+                                    system["system_name"],
+
+                                "method":
+                                    "LSI Manual",
+
+                                "sample_date":
+                                    datetime.now().date(),
+
+                                "ph":
+                                    ph,
+
+                                "temperature_c":
+                                    temperature,
+
+                                "tds_ppm":
+                                    tds,
+
+                                "calcium_hardness":
+                                    calcium,
+
+                                "alkalinity":
+                                    alkalinity,
+
+                                "factor_a":
+                                    result["factor_A"],
+
+                                "factor_b":
+                                    result["factor_B"],
+
+                                "factor_c":
+                                    result["factor_C"],
+
+                                "factor_d":
+                                    result["factor_D"],
+
+                                "ph_s":
+                                    result["ph_saturacion"],
+
+                                "lsi": round(lsi_log, 2),
+
+                                "lsi_tablas": round(lsi_tab, 2),
+
+                                "created_at":
+                                    datetime.now().isoformat()
+
+                            }])
 
                         # ==========================
                         # GUARDAR DB

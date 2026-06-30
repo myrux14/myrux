@@ -428,6 +428,39 @@ def run_migrations():
                 "014_create_login_history"
             )
 
+        # =====================================================
+        # 015 - RSI COLUMNS
+        # =====================================================
+        if not migration_applied(
+            cursor,
+            "015_add_rsi_columns"
+        ):
+
+            for col_name in ("rsi", "rsi_tablas"):
+
+                try:
+
+                    cursor.execute(
+                        f"""
+                        ALTER TABLE analysis
+                        ADD COLUMN {col_name} REAL
+                        """
+                    )
+
+                except Exception as e:
+
+                    conn.rollback()
+
+                    print(
+                        f"{col_name} ya existe:",
+                        e
+                    )
+
+            mark_migration(
+                cursor,
+                "015_add_rsi_columns"
+            )
+
         # -----------------------------
         # COMMIT FINAL
         # -----------------------------

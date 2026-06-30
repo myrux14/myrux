@@ -6,9 +6,57 @@ from core.lsi_table import A, B, HF, AF
 from core.lsi_table import componentes_tabla
 from core.lsi_log import componentes_log
 
+from core.rsi_log import calcular_rsi_log
+from core.rsi_table import calcular_rsi as calcular_rsi_tabla
+
+from core.config import (
+    RSI_IDEAL_MIN,
+    RSI_IDEAL_MAX,
+    RSI_MUYINCRUSTANTE,
+    RSI_MUYCORROSIVO
+)
+
 # 🔥 FUNCIÓN QUE APP.py ESTÁ ESPERANDO
 def calcular_lsi(ph, temperature, tds, calcium, alkalinity):
     return calcular_lsi_log(ph, tds, temperature, calcium, alkalinity)
+
+
+# -----------------------------
+# RSI
+# -----------------------------
+def calcular_rsi(ph, temperature, tds, calcium, alkalinity):
+    return calcular_rsi_log(ph, tds, temperature, calcium, alkalinity)
+
+
+def clasificar_rsi(rsi):
+    if rsi is None:
+        return "Sin datos"
+
+    if rsi < RSI_MUYINCRUSTANTE:
+        return "Muy incrustante"
+
+    elif RSI_MUYINCRUSTANTE <= rsi < RSI_IDEAL_MIN:
+        return "Incrustante"
+
+    elif RSI_IDEAL_MIN <= rsi <= RSI_IDEAL_MAX:
+        return "Equilibrada"
+
+    elif RSI_IDEAL_MAX < rsi <= RSI_MUYCORROSIVO:
+        return "Corrosiva"
+
+    else:
+        return "Muy corrosiva"
+
+
+def color_rsi(clase):
+    colores = {
+        "Muy incrustante": "red",
+        "Incrustante": "orange",
+        "Equilibrada": "green",
+        "Corrosiva": "lightblue",
+        "Muy corrosiva": "blue"
+    }
+    return colores.get(clase, "gray")
 
 
 # (opcional pero recomendado)
