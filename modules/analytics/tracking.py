@@ -10,19 +10,22 @@ _PRIVATE_PREFIXES = (
     "127.", "10.", "192.168.", "172.16.", "172.17.",
     "172.18.", "172.19.", "172.20.", "172.21.", "172.22.",
     "172.23.", "172.24.", "172.25.", "172.26.", "172.27.",
-    "172.28.", "172.29.", "172.30.", "172.31.", "::1", ""
+    "172.28.", "172.29.", "172.30.", "172.31.", "::1"
 )
 
 
-def _get_ip(headers: dict) -> str:
-    h = {
+def _normalize_headers(headers: dict) -> dict:
+    return {
         k.lower(): v
         for k, v in headers.items()
     }
-    forwarded = h.get("x-forwarded-for", "")
+
+
+def _get_ip(headers: dict) -> str:
+    forwarded = headers.get("x-forwarded-for", "")
     if forwarded:
         return forwarded.split(",")[0].strip()
-    return h.get("x-real-ip", "")
+    return headers.get("x-real-ip", "")
 
 
 def _anonymize_ip(ip: str) -> str:
@@ -88,7 +91,9 @@ def register_visit(page: str = "public_lsi"):
     cursor = None
 
     try:
-        headers = dict(st.context.headers)
+        headers = _normalize_headers(
+            dict(st.context.headers)
+        )
     except Exception:
         headers = {}
 
