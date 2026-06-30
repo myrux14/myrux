@@ -122,13 +122,16 @@ def init_db():
         # -----------------------------
         # COMPANY DEFAULT
         # -----------------------------
-        try:
+        cursor.execute(
+            f"SELECT id FROM companies WHERE id = {placeholder}",
+            (1,)
+        )
+
+        if not cursor.fetchone():
             cursor.execute("""
                 INSERT INTO companies (id, name)
                 VALUES (1, 'Default Company')
             """)
-        except:
-            pass  # ya existe
 
         # -----------------------------
         # ADMIN SEGURO (bcrypt)
