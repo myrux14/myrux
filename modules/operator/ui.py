@@ -945,49 +945,6 @@ def operator_dashboard():
                         "Archivo cargado correctamente"
                     )
 
-                # ==================================
-                # TABLA DE DATOS SIMPLE
-                # ==================================
-                st.divider()
-
-                st.subheader(
-                    "📋 Datos guardados"
-                )
-
-                df_rsi_hist = get_analysis_by_system(
-                    company_id=st.session_state.company_id,
-                    system_id=st.session_state.system_id
-                )
-
-                if df_rsi_hist is not None and not df_rsi_hist.empty:
-
-                    df_show = df_rsi_hist[
-                        [
-                            c for c in [
-                                "sample_date",
-                                "ph",
-                                "rsi",
-                                "rsi_tablas",
-                                "method"
-                            ]
-                            if c in df_rsi_hist.columns
-                        ]
-                    ].copy()
-
-                    df_show["clasificacion"] = df_show["rsi"].apply(
-                        clasificar_rsi
-                    )
-
-                    st.dataframe(
-                        df_show,
-                        use_container_width=True
-                    )
-
-                else:
-
-                    st.info(
-                        "Sin registros guardados todavía"
-                    )
 
     # ======================================
     # CENTER
@@ -1518,6 +1475,43 @@ def operator_dashboard():
         system_id=st.session_state.system_id
 
     )
+
+    # ======================================
+    # TABLA RSI (fuera de columnas)
+    # ======================================
+    if "RSI" in chemistry_model:
+
+        st.divider()
+
+        st.subheader("📋 Datos guardados")
+
+        if df is not None and not df.empty:
+
+            df_show = df[
+                [
+                    c for c in [
+                        "sample_date",
+                        "ph",
+                        "rsi",
+                        "rsi_tablas",
+                        "method"
+                    ]
+                    if c in df.columns
+                ]
+            ].copy()
+
+            df_show["clasificacion"] = df_show["rsi"].apply(
+                clasificar_rsi
+            )
+
+            st.dataframe(
+                df_show,
+                use_container_width=True
+            )
+
+        else:
+
+            st.info("Sin registros guardados todavía")
 
     # ======================================
     # DATOS DE CAMPO (solo LSI)
