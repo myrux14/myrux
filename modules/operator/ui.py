@@ -65,6 +65,154 @@ from core.rsi_table import (
     componentes_tabla_rsi
 )
 
+from modules.operator.rsi_field_data_table import (
+    render_rsi_field_data_table
+)
+
+from modules.operator.rsi_graphs import (
+    render_rsi_graphs
+)
+
+from modules.operator.rsi_optimization import (
+    render_rsi_optimization
+)
+
+from core.config import (
+    RSI_IDEAL_MIN,
+    RSI_IDEAL_MAX
+)
+
+
+# ======================================
+# KPI RSI
+# ======================================
+def _render_rsi_kpi(df):
+
+    st.divider()
+
+    st.subheader("📊 KPI — Índice de Ryznar")
+
+    if df is None or df.empty:
+
+        st.info("Sin datos para calcular KPI")
+
+        return
+
+    rsi_col = "rsi"
+
+    if rsi_col not in df.columns:
+
+        st.warning("Sin datos RSI registrados")
+
+        return
+
+    df_k = df.dropna(subset=[rsi_col])
+
+    total = len(df_k)
+
+    if total == 0:
+
+        st.info("Sin registros con RSI calculado")
+
+        return
+
+    promedio = round(df_k[rsi_col].mean(), 2)
+
+    ultimo = round(df_k.iloc[0][rsi_col], 2)
+
+    ultimo_clase = clasificar_rsi(ultimo)
+
+    n_equilibrada = len(
+        df_k[
+            (df_k[rsi_col] >= RSI_IDEAL_MIN)
+            & (df_k[rsi_col] <= RSI_IDEAL_MAX)
+        ]
+    )
+
+    pct_equilibrada = round(
+        n_equilibrada / total * 100,
+        1
+    )
+
+    # ======================================
+    # MÉTRICAS
+    # ======================================
+    k1, k2, k3, k4 = st.columns(4)
+
+    k1.metric("Total registros", total)
+
+    k2.metric("Promedio RSI", promedio)
+
+    k3.metric(
+        "Último RSI",
+        ultimo,
+        delta=ultimo_clase
+    )
+
+    k4.metric(
+        "% Equilibrada",
+        f"{pct_equilibrada}%"
+    )
+
+    st.divider()
+
+    # ======================================
+    # DISTRIBUCIÓN
+    # ======================================
+    st.subheader("Distribución del agua")
+
+    categorias = {
+        "Muy incrustante": 0,
+        "Incrustante": 0,
+        "Equilibrada": 0,
+        "Corrosiva": 0,
+        "Muy corrosiva": 0
+    }
+
+    for val in df_k[rsi_col]:
+
+        clase = clasificar_rsi(val)
+
+        if clase in categorias:
+
+            categorias[clase] += 1
+
+    dist_col1, dist_col2, dist_col3 = st.columns(3)
+
+    incrustante = (
+        categorias["Muy incrustante"]
+        + categorias["Incrustante"]
+    )
+
+    corrosiva = (
+        categorias["Corrosiva"]
+        + categorias["Muy corrosiva"]
+    )
+
+    with dist_col1:
+
+        st.metric(
+            "Incrustante",
+            incrustante,
+            delta=f"{round(incrustante/total*100,1)}%"
+        )
+
+    with dist_col2:
+
+        st.metric(
+            "Equilibrada",
+            categorias["Equilibrada"],
+            delta=f"{pct_equilibrada}%"
+        )
+
+    with dist_col3:
+
+        st.metric(
+            "Corrosiva",
+            corrosiva,
+            delta=f"{round(corrosiva/total*100,1)}%"
+        )
+
 
 def operator_dashboard():
 
@@ -644,6 +792,24 @@ def operator_dashboard():
                     Sistema configurado
                     para índice Ryznar
                     """
+                )
+
+                # ==================================
+                # MENÚ ANÁLISIS RSI
+                # ==================================
+                analysis_option_rsi = st.selectbox(
+
+                    "Selecciona análisis",
+
+                    [
+                        "📋 Datos campo",
+                        "📈 Gráficas",
+                        "🧠 Optimización",
+                        "📊 KPI"
+                    ],
+
+                    key="rsi_analysis_option"
+
                 )
 
                 # ==================================
@@ -1477,41 +1643,30 @@ def operator_dashboard():
     )
 
     # ======================================
-    # TABLA RSI (fuera de columnas)
+    # ANÁLISIS RSI (fuera de columnas)
     # ======================================
     if "RSI" in chemistry_model:
 
-        st.divider()
+        analysis_option_rsi = st.session_state.get(
+            "rsi_analysis_option",
+            "📋 Datos campo"
+        )
 
-        st.subheader("📋 Datos guardados")
+        if analysis_option_rsi == "📋 Datos campo":
 
-        if df is not None and not df.empty:
+            render_rsi_field_data_table(df)
 
-            df_show = df[
-                [
-                    c for c in [
-                        "sample_date",
-                        "ph",
-                        "rsi",
-                        "rsi_tablas",
-                        "method"
-                    ]
-                    if c in df.columns
-                ]
-            ].copy()
+        elif analysis_option_rsi == "📈 Gráficas":
 
-            df_show["clasificacion"] = df_show["rsi"].apply(
-                clasificar_rsi
-            )
+            render_rsi_graphs(df)
 
-            st.dataframe(
-                df_show,
-                use_container_width=True
-            )
+        elif analysis_option_rsi == "🧠 Optimización":
 
-        else:
+            render_rsi_optimization()
 
-            st.info("Sin registros guardados todavía")
+        elif analysis_option_rsi == "📊 KPI":
+
+            _render_rsi_kpi(df)
 
     # ======================================
     # DATOS DE CAMPO (solo LSI)
