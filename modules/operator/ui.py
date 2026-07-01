@@ -1520,24 +1520,26 @@ def operator_dashboard():
     )
 
     # ======================================
-    # DATOS DE CAMPO
+    # DATOS DE CAMPO (solo LSI)
     # ======================================
-    from modules.operator.field_data_table import (
-        render_field_data_table
-    )
+    if "LSI" in chemistry_model:
 
-    if analysis_option == "📋 Datos campo":
+        from modules.operator.field_data_table import (
+            render_field_data_table
+        )
 
-        render_field_data_table(df)
-    
-    elif analysis_option == "📈 Gráficas":
+        if analysis_option == "📋 Datos campo":
 
-        render_graphs(df)
+            render_field_data_table(df)
 
-    elif analysis_option == "🧠 Optimización":
+        elif analysis_option == "📈 Gráficas":
 
-        render_optimization()
+            render_graphs(df)
 
-    #elif analysis_option == "📄 Reporte":
+        elif analysis_option == "🧠 Optimización":
 
-        #render_report(df)
+            render_optimization()
+
+        #elif analysis_option == "📄 Reporte":
+
+            #render_report(df)
