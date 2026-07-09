@@ -50,8 +50,10 @@ def logout(cookies):
             user.get("username")
         )
 
-    cookies["session_token"] = ""
-    cookies.save()
+    try:
+        cookies.delete("session_token")
+    except Exception:
+        pass
 
     for key in MYRUX_SESSION_KEYS:
         if key in st.session_state:
@@ -195,8 +197,7 @@ def login(cookies):
                 "token"
             ] = token
 
-            cookies["session_token"] = token
-            cookies.save()
+            cookies.set("session_token", token)
 
             log_login(
                 user["id"],

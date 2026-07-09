@@ -10,9 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-from streamlit_cookies_manager import (
-    EncryptedCookieManager
-)
+from extra_streamlit_components import CookieManager
 
 from modules.public.lsi_simulator import (
     render_public_lsi
@@ -50,8 +48,7 @@ from modules.auth.service import (
 
 from core.config import (
     APP_NAME,
-    ENV,
-    COOKIE_SECRET
+    ENV
 )
 
 from modules.auth.ui import (
@@ -74,13 +71,7 @@ from modules.auth.session import (
 # =========================================
 # COOKIES
 # =========================================
-cookies = EncryptedCookieManager(
-    prefix="myrux_",
-    password=COOKIE_SECRET
-)
-
-if not cookies.ready():
-    st.stop()
+cookies = CookieManager(prefix="myrux_")
 
 # =========================================
 # INIT DB + MIGRATIONS
