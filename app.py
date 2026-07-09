@@ -71,7 +71,7 @@ from modules.auth.session import (
 # =========================================
 # COOKIES
 # =========================================
-cookies = CookieManager(prefix="myrux_")
+cookies = CookieManager()
 
 # =========================================
 # INIT DB + MIGRATIONS
